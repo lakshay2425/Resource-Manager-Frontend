@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true
       })
       console.log(apiResponse, "Verify User Session API Respone")
-      if (apiResponse.status === 200) {
+      if (apiResponse.status === 200 && apiResponse.data.userInfo != null) {
         setIsAuthenticated(true);
         setUser(apiResponse.data.userInfo);
       } else {

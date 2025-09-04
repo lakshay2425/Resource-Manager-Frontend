@@ -2,7 +2,7 @@ import LoadingBar from "../components/LoadingBar.jsx";
 import { getInitials } from "../utilis/getInitials.js";
 import {getCategoryColor} from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
-import  { useState, useEffect, useMemo } from 'react';
+import  { useState, useEffect, useMemo, useContext } from 'react';
 import { 
   Search, 
   BookmarkPlus, 
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from "../context/AuthContext.jsx";
 
 export default function AllResourcesPage() {
   const navigate = useNavigate();
@@ -31,12 +32,15 @@ export default function AllResourcesPage() {
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const {user} = useContext(AuthContext);
   useEffect(() => { 
     const fetchData = async () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get("/resources?email=lakshay12290@gmail.com");
+                // const response = await axiosInstance.get(`/resources?email=${user.gmail}`, {
+                //   withCredentials: true
+                // });
         setResources(response.data.data || []);
       } catch (error) {
         console.error('Error fetching resources:', error);
