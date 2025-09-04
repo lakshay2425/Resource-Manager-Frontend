@@ -4,9 +4,11 @@ import ResourceCreationForm from './pages/createForm.jsx'
 import Home from './pages/Home.jsx'
 import PublicResources from "./pages/publicResources.jsx"
 import Resource from "./pages/Resources.jsx"
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import RenderProtectedRoute from './utilis/renderProtectedRoute.jsx'
 import { AuthContext } from './context/AuthContext.jsx'
+import Navbar from './components/Navbar.jsx'
+import Footer from './components/Footer.jsx'
 
 function App() {
   useEffect(() => {
@@ -32,7 +34,7 @@ function App() {
 
   return (
     <>
-    <BrowserRouter>
+    <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/publicResources" element={<PublicResources />} />
@@ -74,7 +76,7 @@ function App() {
           }
           />
       </Routes>
-    </BrowserRouter>
+    <Footer/>
     </>
   )
 }

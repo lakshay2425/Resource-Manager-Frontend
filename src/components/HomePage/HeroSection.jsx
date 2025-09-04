@@ -6,9 +6,12 @@ import {
 } from 'lucide-react';
 import {useGoogleAuth} from "../../hooks/useGoogleOAuth.js"
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const {isAuthenticated} = useContext(AuthContext);
   const {handleGoogleLogin} = useGoogleAuth();
   return (
     <>
@@ -26,7 +29,7 @@ const HeroSection = () => {
                 Say goodbye to lost resources and hello to organized, accessible knowledge management! 🚀
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button onClick={handleGoogleLogin} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                <button onClick={()=> isAuthenticated === false ? handleGoogleLogin : navigate("/resources")  } className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
                   Start Organizing Now
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>

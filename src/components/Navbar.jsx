@@ -87,7 +87,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 p-2 rounded-xl hover:bg-purple-50/50 transition-all duration-200 group border border-transparent hover:border-purple-200/50"
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                      <User className="w-4 h-4 text-white" /><img src={user && user.profileImage} alt="User Profile Image" />
+                      <User className="w-4 h-4 text-white" /><img src={user && user.profileImage} />
                     </div>
                     <span className="font-medium text-gray-700 group-hover:text-purple-600">{user && user.name}</span>
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
