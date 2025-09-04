@@ -15,6 +15,12 @@ const Navbar = () => {
   const { setIsAuthenticated, isAuthenticated, setGmail, gmail } = useContext(AuthContext);
   const { handleGoogleLogin } = useGoogleAuth();
 
+  useEffect(() => {
+  console.log("Navbar - user:", user);
+  console.log("Navbar - localStorage:", JSON.parse(localStorage.getItem("userInfo")));
+}, [user]);
+
+
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
 
@@ -44,6 +50,7 @@ const Navbar = () => {
       setIsProfileOpen(false);
     }
   };
+
 
   const navigationLinks = [
     { href: '/publicResources', label: 'Public Resources', icon: Home },
@@ -100,7 +107,7 @@ const Navbar = () => {
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/10 border border-white/30 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
                       <div className="px-4 py-3 border-b border-gray-100/50">
-                        <p className="text-sm font-medium text-gray-700">{user?.name || "Guest"}</p>
+                        <p className="text-sm font-medium text-gray-700">{user?.username || "Guest"}</p>
                         <p className="text-xs text-gray-500">{gmail}</p>
                       </div>
                       <div className="border-t border-gray-100/50 pt-2">

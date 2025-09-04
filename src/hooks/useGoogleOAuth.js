@@ -26,7 +26,6 @@ export const useGoogleAuth = () => {
         );
       }
       if (result.status == 200 || result.status == 201) {
-        console.log(result, "RESULT")
         setUser({
           profilePic: result.data.userInfo.profileImage,
           username: result.data.userInfo.username,
