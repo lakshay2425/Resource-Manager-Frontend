@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
       const apiResponse = await axios.get(`${import.meta.env.VITE_AUTH_URL}/auth/google/verify`, {
         withCredentials: true
       })
+      console.log(apiResponse, "Verify User Session API Respone")
       if (apiResponse.status === 200) {
         setIsAuthenticated(true);
         setUser(apiResponse.data.userInfo);
