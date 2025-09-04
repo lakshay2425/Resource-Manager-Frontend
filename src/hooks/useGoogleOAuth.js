@@ -16,7 +16,10 @@ export const useGoogleAuth = () => {
       const businessName = "Resource Manager"
       if (authResult["code"]) {
         result = await axios.get(
-          `${authService}/auth/google/callback?code=${authResult["code"]}&businessName=${businessName}`
+          `${authService}/auth/google/callback?code=${authResult["code"]}&businessName=${businessName}`,
+          {
+            withCredentials: true
+          }
         );
       }
       if (result.status == 200 || result.status == 201) {
