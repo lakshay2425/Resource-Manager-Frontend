@@ -16,7 +16,6 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-// import Navbar from '../components/Navbar';
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
 
@@ -240,8 +239,6 @@ export default function AllResourcesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      {/* Navigation Bar */}
-      {/* <Navbar/> */}
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-white/20">
