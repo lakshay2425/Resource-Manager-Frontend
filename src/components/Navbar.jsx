@@ -90,9 +90,9 @@ const Navbar = () => {
                     className="flex items-center space-x-2 p-2 rounded-xl hover:bg-purple-50/50 transition-all duration-200 group border border-transparent hover:border-purple-200/50"
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                      <User className="w-4 h-4 text-white" /><img src={user && user?.profileImage} />
+                      <User className="w-4 h-4 text-white" /><img src={user?.profilePic} />
                     </div>
-                    <span className="font-medium text-gray-700 group-hover:text-purple-600">{user && user?.name || "Guest"}  </span>
+                    <span className="font-medium text-gray-700 group-hover:text-purple-600">{user?.name || "Guest"}  </span>
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -100,7 +100,7 @@ const Navbar = () => {
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/10 border border-white/30 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
                       <div className="px-4 py-3 border-b border-gray-100/50">
-                        <p className="text-sm font-medium text-gray-700">{user && user?.name || "Guest"}</p>
+                        <p className="text-sm font-medium text-gray-700">{user?.name || "Guest"}</p>
                         <p className="text-xs text-gray-500">{gmail}</p>
                       </div>
                       <div className="border-t border-gray-100/50 pt-2">
