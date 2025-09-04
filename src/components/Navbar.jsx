@@ -15,11 +15,6 @@ const Navbar = () => {
   const { setIsAuthenticated, isAuthenticated, setGmail, gmail } = useContext(AuthContext);
   const { handleGoogleLogin } = useGoogleAuth();
 
-  useEffect(() => {
-  console.log("Navbar - user:", user);
-  console.log("Navbar - localStorage:", JSON.parse(localStorage.getItem("userInfo")));
-}, [user]);
-
 
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();

@@ -1,24 +1,24 @@
 import LoadingBar from "../components/LoadingBar.jsx";
 import { getInitials } from "../utilis/getInitials.js";
-import {getCategoryColor} from "../utilis/getCategoryColor.js"
+import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
-import  { useState, useEffect, useMemo } from 'react';
-import { 
-  Search, 
-  BookmarkPlus, 
+import { useState, useEffect, useMemo, useContext } from 'react';
+import {
+  Search,
+  BookmarkPlus,
   Globe,
   ArrowUpRight,
   X,
   Grid,
   List,
-    Edit3,
+  Edit3,
   Lock,
   Plus,
   Trash2,
 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
-// import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 export default function AllResourcesPage() {
   const navigate = useNavigate();
@@ -32,16 +32,16 @@ export default function AllResourcesPage() {
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  // const {user} = useContext(AuthContext);
-  
-  useEffect(() => { 
+  const { gmail } = useContext(AuthContext);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await axiosInstance.get("/resources?email=lakshay12290@gmail.com");
-                // const response = await axiosInstance.get(`/resources?email=${user.gmail}`, {
-                //   withCredentials: true
-                // });
+        // const response = await axiosInstance.get("/resources?email=lakshay12290@gmail.com");
+        const response = await axiosInstance.get(`/resources?email=${gmail}`, {
+          withCredentials: true
+        });
         setResources(response.data.data || []);
       } catch (error) {
         console.error('Error fetching resources:', error);
@@ -51,7 +51,7 @@ export default function AllResourcesPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [gmail]);
 
   // Get unique categories from resources
   const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
@@ -59,17 +59,17 @@ export default function AllResourcesPage() {
   // Filter and sort resources
   const filteredResourcesComputed = useMemo(() => {
     let filtered = resources.filter(resource => {
-      const matchesSearch = searchTerm === '' || 
+      const matchesSearch = searchTerm === '' ||
         resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesCategory = selectedCategory === 'All' || 
+
+      const matchesCategory = selectedCategory === 'All' ||
         resource.tags.includes(selectedCategory);
-      
-      const matchesStatus = selectedStatus === 'All' || 
+
+      const matchesStatus = selectedStatus === 'All' ||
         resource.status.toLowerCase() === selectedStatus.toLowerCase();
-      
+
       // Tab filtering - all resources are user's resources
       let matchesTab = true;
       if (activeTab === 'private') {
@@ -78,7 +78,7 @@ export default function AllResourcesPage() {
         matchesTab = resource.status === 'public';
       }
       // 'all' tab shows all user resources
-      
+
       return matchesSearch && matchesCategory && matchesStatus && matchesTab;
     });
 
@@ -106,7 +106,7 @@ export default function AllResourcesPage() {
     const privateCount = resources.filter(r => r.status === 'private').length;
     const publicCount = resources.filter(r => r.status === 'public').length;
     const totalCount = resources.length;
-    
+
     return { privateCount, publicCount, totalCount };
   };
 
@@ -118,7 +118,7 @@ export default function AllResourcesPage() {
     if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
         await axiosInstance.delete(`/resources?id=${resourceId}`);
-        setResources(prevResources => 
+        setResources(prevResources =>
           prevResources.filter(resource => resource._id !== resourceId)
         );
       } catch (error) {
@@ -154,7 +154,7 @@ export default function AllResourcesPage() {
             <div className={`${isListView ? 'flex-1 pr-4' : ''}`}>
               <div className="flex items-center space-x-3 mb-2">
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resource.tags[0])}`}>
-                    <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
+                  <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
                   <span>{resource.tags[0]}</span>
                 </span>
                 {resource.tags.length > 1 && (
@@ -175,7 +175,7 @@ export default function AllResourcesPage() {
           {/* All Tags */}
           <div className={`flex flex-wrap gap-2 ${isListView ? 'mb-3' : 'mb-4'}`}>
             {resource.tags.map((tag, index) => (
-              <span 
+              <span
                 key={index}
                 className="bg-gray-50 text-gray-600 px-2 py-1 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-600 transition-colors cursor-pointer flex items-center space-x-1"
               >
@@ -198,20 +198,20 @@ export default function AllResourcesPage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Action Buttons */}
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">
-                   {/* Edit Button */}
-                <button 
-                  onClick={() => navigate(`/edit/${resource._id}`, {state: {resource}})}
-                  className="p-2 text-gray-400 hover:text-blue-500 transition-colors group/edit"
-                  title="Edit Resource"
-                >
-                  <Edit3 className="w-4 h-4 transform group-hover/edit:scale-110 transition-transform duration-200" />
-                </button>
-                  <button 
+                  {/* Edit Button */}
+                  <button
+                    onClick={() => navigate(`/edit/${resource._id}`, { state: { resource } })}
+                    className="p-2 text-gray-400 hover:text-blue-500 transition-colors group/edit"
+                    title="Edit Resource"
+                  >
+                    <Edit3 className="w-4 h-4 transform group-hover/edit:scale-110 transition-transform duration-200" />
+                  </button>
+                  <button
                     onClick={() => handleDeleteResource(resource._id)}
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                     title="Delete Resource"
@@ -219,7 +219,7 @@ export default function AllResourcesPage() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <a 
+                <a
                   href={resource.sourceLink}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -238,7 +238,7 @@ export default function AllResourcesPage() {
 
   if (isLoading) {
     return (
-      <LoadingBar message={"Loading Your Resources..."}/>
+      <LoadingBar message={"Loading Your Resources..."} />
     );
   }
 
@@ -255,7 +255,7 @@ export default function AllResourcesPage() {
               </h1>
               <p className="text-gray-600 mt-1">Manage your private and public resources</p>
             </div>
-            
+
             {/* Stats */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200">
@@ -277,31 +277,28 @@ export default function AllResourcesPage() {
           <div className="flex space-x-1 bg-gray-100 rounded-xl p-1 mt-6 w-fit">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'all' 
-                  ? 'bg-white text-purple-600 shadow-sm' 
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'all'
+                  ? 'bg-white text-purple-600 shadow-sm'
                   : 'text-gray-600 hover:text-purple-600'
-              }`}
+                }`}
             >
               All Resources ({stats.totalCount})
             </button>
             <button
               onClick={() => setActiveTab('private')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'private' 
-                  ? 'bg-white text-purple-600 shadow-sm' 
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'private'
+                  ? 'bg-white text-purple-600 shadow-sm'
                   : 'text-gray-600 hover:text-purple-600'
-              }`}
+                }`}
             >
               Private ({stats.privateCount})
             </button>
             <button
               onClick={() => setActiveTab('public')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'public' 
-                  ? 'bg-white text-purple-600 shadow-sm' 
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'public'
+                  ? 'bg-white text-purple-600 shadow-sm'
                   : 'text-gray-600 hover:text-purple-600'
-              }`}
+                }`}
             >
               Public ({stats.publicCount})
             </button>
@@ -395,15 +392,15 @@ export default function AllResourcesPage() {
 
         {/* Resources Grid/List */}
         {filteredResources.length > 0 ? (
-          <div className={viewMode === 'grid' 
-            ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8" 
+          <div className={viewMode === 'grid'
+            ? "grid md:grid-cols-2 lg:grid-cols-3 gap-8"
             : "space-y-6"
           }>
             {filteredResources.map(resource => (
-              <ResourceCard 
-                key={resource._id} 
-                resource={resource} 
-                isListView={viewMode === 'list'} 
+              <ResourceCard
+                key={resource._id}
+                resource={resource}
+                isListView={viewMode === 'list'}
               />
             ))}
           </div>
@@ -414,13 +411,13 @@ export default function AllResourcesPage() {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">No resources found</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              {activeTab === 'private' 
+              {activeTab === 'private'
                 ? "You haven't created any private resources yet. Start building your personal collection!"
                 : activeTab === 'public'
-                ? "You haven't made any resources public yet. Share your knowledge with the community!"
-                : searchTerm || selectedCategory !== 'All'
-                ? "No resources match your current filters. Try adjusting your search criteria."
-                : "You haven't created any resources yet. Start building your collection!"
+                  ? "You haven't made any resources public yet. Share your knowledge with the community!"
+                  : searchTerm || selectedCategory !== 'All'
+                    ? "No resources match your current filters. Try adjusting your search criteria."
+                    : "You haven't created any resources yet. Start building your collection!"
               }
             </p>
             <div className="flex justify-center space-x-4">
@@ -437,7 +434,7 @@ export default function AllResourcesPage() {
               )}
               <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2">
                 <Plus className="w-4 h-4" />
-                <span onClick={()=> navigate("/createResource")}>Add Resource</span>
+                <span onClick={() => navigate("/createResource")}>Add Resource</span>
               </button>
             </div>
           </div>
