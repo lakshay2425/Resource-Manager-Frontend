@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const apiResponse = await axios.get(`http://localhost:5000/api/auth/google/verify`, {
+      const apiResponse = await axios.get(`${import.meta.env.VITE_AUTH_URL}/auth/google/verify`, {
         withCredentials: true
       })
       if (apiResponse.status === 200) {
