@@ -5,7 +5,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [gmail, setGmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuthStatus = async () => {
@@ -16,10 +16,10 @@ export const AuthProvider = ({ children }) => {
       console.log(apiResponse, "Verify User Session API Respone")
       if (apiResponse.status === 200 && apiResponse.data.userInfo != null) {
         setIsAuthenticated(true);
-        setUser(apiResponse.data.userInfo);
+        setGmail(apiResponse.data.userInfo.email);
       } else {
         setIsAuthenticated(false);
-        setUser(null);
+        setGmail("")
       }
     } catch (error) {
       console.log("Faled to verify", error.message);
@@ -28,16 +28,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
   useEffect(() => {
-    if (user == null) {
       checkAuthStatus();
-    }
-  }, [user])
+  }, [])
 
   const authContextValue = {
     isAuthenticated,
     isLoading, setIsLoading,
-    user,
-    setUser,
+    gmail,
+    setGmail,
     setIsAuthenticated
   };
 
