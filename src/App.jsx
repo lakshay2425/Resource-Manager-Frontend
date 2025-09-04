@@ -30,7 +30,7 @@ function App() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-  const {user, isAuthenticated} = useContext(AuthContext);
+  const {isAuthenticated} = useContext(AuthContext);
 
   return (
     <>
@@ -43,9 +43,7 @@ function App() {
         path="/createResource" 
         element={
           <RenderProtectedRoute
-          condition={
-            isAuthenticated === true && user != null
-          }
+          condition={isAuthenticated === true}
           renderPage={<ResourceCreationForm />}
           fallback='/'
           errorMessage='You need to login to access this page'
@@ -54,9 +52,7 @@ function App() {
 
         <Route path='/resources' element={
           <RenderProtectedRoute
-          condition={
-            isAuthenticated === true && user != null
-          }
+          condition={isAuthenticated === true}
           renderPage={<Resource />}
           fallback='/'
           errorMessage='You need to login to access this page'
@@ -66,9 +62,7 @@ function App() {
 
           <Route path='/edit/:id' element={
           <RenderProtectedRoute
-          condition={
-            isAuthenticated === true && user != null
-          }
+          condition={isAuthenticated === true}
           renderPage={<EditResource />}
           fallback='/'
           errorMessage='You need to login to access this page'
