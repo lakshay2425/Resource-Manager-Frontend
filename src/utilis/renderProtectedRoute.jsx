@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { Navigate } from "react-router-dom";
 
 
-const RenderProtectedRoute = ({condition,renderPage,fallback,errorMessage, devMode=true}) => {
+const RenderProtectedRoute = ({condition,renderPage,fallback,errorMessage, devMode=false}) => {
   const checkFailed = () => {
     toast.error(errorMessage);
     if (!condition) {
