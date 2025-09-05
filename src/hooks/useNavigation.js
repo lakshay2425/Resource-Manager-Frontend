@@ -4,16 +4,25 @@ const useSectionNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
+
   const navigateToSection = (sectionId) => {
     if (location.pathname === '/') {
-      // On home page - just scroll
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      scrollToSection(sectionId)
     } else {
-      // On different page - navigate to home with hash
-      navigate(`/#${sectionId}`);
+      navigate(`/`);
+      setTimeout(() => {
+        scrollToSection(sectionId);
+      }, 100);
     }
   };
 
