@@ -1,0 +1,15 @@
+User-agent: *
+
+Allow: /
+Allow: /publicResources
+
+Disallow: /resources
+Disallow: /edit/
+Disallow: /createResource
+
+
+
+Sitemap: https://resources.lakshaymahajan.com/sitemap.xml
+
+# Optional: Crawl delay (seconds between requests)
+Crawl-delay: 1
