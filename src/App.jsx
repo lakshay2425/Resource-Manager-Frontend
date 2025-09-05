@@ -10,6 +10,8 @@ const RenderProtectedRoute = lazy(()=> import("./utilis/renderProtectedRoute.jsx
 const Navbar = lazy(()=> import("./components/Navbar.jsx"))
 const Footer = lazy(()=> import("./components/Footer.jsx"))
 const ScrollToTop = lazy(()=> import('./utilis/scrollToTop.jsx'))
+const NotFound = lazy(()=> import("./pages/NotFound.jsx"))
+const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
 
 function App() {
   useEffect(() => {
@@ -37,7 +39,7 @@ function App() {
     <>
     <Navbar/>
     <ScrollToTop/>
-    <Suspense fallback="Loading...">
+    <Suspense fallback={<Spinner message={"Loading Resources..."}/>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/publicResources" element={<PublicResources />} />
@@ -72,6 +74,7 @@ function App() {
           />
           }
           />
+          <Route path='*' element={<NotFound/>}/>
       </Routes>
       </Suspense>
     <Footer/>

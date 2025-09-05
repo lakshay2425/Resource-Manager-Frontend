@@ -1,8 +1,8 @@
-import LoadingBar from "../components/LoadingBar.jsx";
+import Spinner  from "../components/LoadingBar.jsx"
 import { getInitials } from "../utilis/getInitials.js";
 import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, } from 'react';
 import {
   Search,
   ExternalLink,
@@ -156,7 +156,7 @@ export default function PublicResourcesPage() {
 
   if (isLoading) {
     return (
-      <LoadingBar message={"Loading Resources..."} />
+      <Spinner message={"Loading Resources..."} />
     );
   }
 
