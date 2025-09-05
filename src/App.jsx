@@ -1,14 +1,15 @@
-import { useEffect, useContext } from 'react'
-import EditResource from "./pages/EditResource.jsx"
-import ResourceCreationForm from './pages/createForm.jsx'
-import Home from './pages/Home.jsx'
-import PublicResources from "./pages/publicResources.jsx"
-import Resource from "./pages/Resources.jsx"
+import { useEffect, useContext , Suspense, lazy} from 'react'
 import { Routes, Route } from 'react-router-dom'
-import RenderProtectedRoute from './utilis/renderProtectedRoute.jsx'
 import { AuthContext } from './context/AuthContext.jsx'
-import Navbar from './components/Navbar.jsx'
-import Footer from './components/Footer.jsx'
+const EditResource = lazy(()=> import("./pages/EditResource.jsx"))
+const ResourceCreationForm = lazy(()=> import("./pages/createForm.jsx"))
+const Home = lazy(()=> import("./pages/Home.jsx"))
+const PublicResources =  lazy(()=> import("./pages/publicResources.jsx"))
+const Resource = lazy(()=> import("./pages/Resources.jsx"))
+const RenderProtectedRoute = lazy(()=> import("./utilis/renderProtectedRoute.jsx"))
+const Navbar = lazy(()=> import("./components/Navbar.jsx"))
+const Footer = lazy(()=> import("./components/Footer.jsx"))
+const ScrollToTop = lazy(()=> import('./utilis/scrollToTop.jsx'))
 
 function App() {
   useEffect(() => {
@@ -35,6 +36,8 @@ function App() {
   return (
     <>
     <Navbar/>
+    <ScrollToTop/>
+    <Suspense fallback="Loading...">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/publicResources" element={<PublicResources />} />
@@ -70,6 +73,7 @@ function App() {
           }
           />
       </Routes>
+      </Suspense>
     <Footer/>
     </>
   )

@@ -1,7 +1,9 @@
 import { 
   BookmarkPlus, 
 } from 'lucide-react';
+import useSectionNavigation from '../hooks/useNavigation.js';
 const Footer = () => {
+    const navigateToSection = useSectionNavigation();
   return (
     <>
           <footer className="bg-gray-900 text-white py-12">
@@ -22,9 +24,9 @@ const Footer = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
-                <li><a href="#why-us" className="text-gray-400 hover:text-white transition-colors">Why ResourceHub?</a></li>
-                <li><a href="#discord" className="text-gray-400 hover:text-white transition-colors">Discord Bot</a></li>
+                <li><button onClick={()=> navigateToSection("features")} className="text-gray-400 hover:text-white transition-colors">Features</button></li>
+                <li><button onClick={()=> navigateToSection("why-us")} className="text-gray-400 hover:text-white transition-colors">Why ResourceHub?</button></li>
+                <li><button onClick={()=> navigateToSection("discord")} className="text-gray-400 hover:text-white transition-colors">Discord Bot</button></li>
               </ul>
             </div>
             

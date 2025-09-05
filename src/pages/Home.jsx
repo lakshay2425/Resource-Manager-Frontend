@@ -11,13 +11,19 @@ export default function ResourceManagerLanding() {
       <HeroSection />
 
       {/* Features Section */}
+      <section id='features'>
       <Features />
+      </section>
 
       {/* Why ResourceHub Section */}
+     <section id='why-us'>
       <WhyRH />
+     </section>
 
       {/* Discord Bot Section */}
+      <section id='discord'>
         <DiscordBot/>
+      </section>
     </div>
   );
 }
