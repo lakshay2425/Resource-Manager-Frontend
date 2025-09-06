@@ -1,13 +1,13 @@
-import  { useState, useRef } from 'react';
-import { 
-  Link, 
-  Type, 
-  FileText, 
-  Lock, 
-  Globe, 
-  Shield, 
-  Save, 
-  X, 
+import { useState, useRef, useContext } from 'react';
+import {
+  Link,
+  Type,
+  FileText,
+  Lock,
+  Globe,
+  Shield,
+  Save,
+  X,
   Plus,
   Sparkles,
   Eye,
@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios"
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { AuthContext } from '../context/AuthContext';
 
 export default function ResourceCreationForm() {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ export default function ResourceCreationForm() {
     status: 'private',
     tags: []
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -40,6 +42,7 @@ export default function ResourceCreationForm() {
   // eslint-disable-next-line no-unused-vars
   const [linkPreview, setLinkPreview] = useState(null);
   const linkInputRef = useRef(null);
+  const {gmail} = useContext(AuthContext);
 
 
   const predefinedTags = [
@@ -54,7 +57,7 @@ export default function ResourceCreationForm() {
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -83,23 +86,23 @@ export default function ResourceCreationForm() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Resource name is required';
     }
-    
+
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     } else if (formData.description.length < 20) {
       newErrors.description = 'Description should be at least 20 characters';
     }
-    
+
     if (!formData.link.trim()) {
       newErrors.link = 'Resource link is required';
     } else if (!isValidUrl(formData.link)) {
       newErrors.link = 'Please enter a valid URL';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -116,25 +119,26 @@ export default function ResourceCreationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-    
-    setIsSubmitting(true);
-    
-    const response = await axiosInstance.post("/resources", formData);
-    if(response.status === 201){ 
-      alert("Resource created successfully");
-      setSubmitSuccess(true);
+    try {
+      setIsSubmitting(true);
+      const response = await axiosInstance.post("/resources", { ...formData, email: gmail });
+      if (response.status === 201) {
+        toast.success("Resource created successfully");
+        setSubmitSuccess(true);
+      }
+      else {
+        alert("Failed to create resource")
+      }
+
+
+    } catch (error) {
+      console.log(error.message, "Failed to create resource");
+      toast.error("Failed to create resource. Try again");
+    } finally {
       setIsSubmitting(false);
-    }
-    else{
-       alert("Failed to create resource")
-    }
-    
-    
-    // Reset form after success
       setFormData({
         name: '',
         description: '',
@@ -142,6 +146,7 @@ export default function ResourceCreationForm() {
         status: 'private',
         tags: []
       });
+    }
 
   };
 
@@ -167,10 +172,10 @@ export default function ResourceCreationForm() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Resource Created Successfully! 🎉</h3>
             <p className="text-gray-600 mb-6">Your resource has been saved and is now available in your collection.</p>
             <div className="flex flex-col space-y-3">
-              <button onClick={()=> navigate("/resources")} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+              <button onClick={() => navigate("/resources")} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                 View My Resources
               </button>
-              <button 
+              <button
                 onClick={() => setSubmitSuccess(false)}
                 className="text-purple-600 hover:text-purple-700 font-medium"
               >
@@ -214,9 +219,8 @@ export default function ResourceCreationForm() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Give your resource an awesome name..."
-                  className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all bg-white/50 backdrop-blur-sm text-lg ${
-                    errors.name ? 'border-red-500' : 'border-gray-200'
-                  }`}
+                  className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all bg-white/50 backdrop-blur-sm text-lg ${errors.name ? 'border-red-500' : 'border-gray-200'
+                    }`}
                 />
                 {errors.name && (
                   <div className="flex items-center space-x-2 mt-2 text-red-500">
@@ -240,9 +244,8 @@ export default function ResourceCreationForm() {
                     onChange={(e) => handleInputChange('link', e.target.value)}
                     onBlur={generateLinkPreview}
                     placeholder="https://awesome-resource.com"
-                    className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 backdrop-blur-sm text-lg pr-12 ${
-                      errors.link ? 'border-red-500' : 'border-gray-200'
-                    }`}
+                    className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 backdrop-blur-sm text-lg pr-12 ${errors.link ? 'border-red-500' : 'border-gray-200'
+                      }`}
                   />
                   {isValidUrl(formData.link) && (
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -269,9 +272,8 @@ export default function ResourceCreationForm() {
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Describe what makes this resource special. What will people learn or gain from it?"
                   rows="4"
-                  className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all bg-white/50 backdrop-blur-sm text-lg resize-none ${
-                    errors.description ? 'border-red-500' : 'border-gray-200'
-                  }`}
+                  className={`w-full px-6 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all bg-white/50 backdrop-blur-sm text-lg resize-none ${errors.description ? 'border-red-500' : 'border-gray-200'
+                    }`}
                 />
                 <div className="flex justify-between items-center mt-2">
                   {errors.description ? (
@@ -293,7 +295,7 @@ export default function ResourceCreationForm() {
                   <Tag className="w-5 h-5 text-orange-500" />
                   <span>Tags</span>
                 </label>
-                
+
                 {/* Current Tags */}
                 {formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -371,25 +373,23 @@ export default function ResourceCreationForm() {
                   <button
                     type="button"
                     onClick={() => handleInputChange('status', 'private')}
-                    className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                      formData.status === 'private' 
-                        ? 'border-purple-500 bg-purple-50 shadow-lg' 
+                    className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${formData.status === 'private'
+                        ? 'border-purple-500 bg-purple-50 shadow-lg'
                         : 'border-gray-200 bg-white/50 hover:border-purple-300'
-                    }`}
+                      }`}
                   >
                     <Lock className={`w-8 h-8 mx-auto mb-3 ${formData.status === 'private' ? 'text-purple-500' : 'text-gray-400'}`} />
                     <h3 className="font-semibold text-gray-800 mb-2">Private</h3>
                     <p className="text-sm text-gray-600">Only you can see this resource</p>
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => handleInputChange('status', 'public')}
-                    className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                      formData.status === 'public' 
-                        ? 'border-green-500 bg-green-50 shadow-lg' 
+                    className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${formData.status === 'public'
+                        ? 'border-green-500 bg-green-50 shadow-lg'
                         : 'border-gray-200 bg-white/50 hover:border-green-300'
-                    }`}
+                      }`}
                   >
                     <Globe className={`w-8 h-8 mx-auto mb-3 ${formData.status === 'public' ? 'text-green-500' : 'text-gray-400'}`} />
                     <h3 className="font-semibold text-gray-800 mb-2">Public</h3>
@@ -403,11 +403,10 @@ export default function ResourceCreationForm() {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className={`w-full py-4 rounded-2xl text-lg font-semibold transition-all duration-300 transform ${
-                  isSubmitting
+                className={`w-full py-4 rounded-2xl text-lg font-semibold transition-all duration-300 transform ${isSubmitting
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:shadow-2xl hover:scale-105 text-white'
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center space-x-2">
@@ -436,11 +435,10 @@ export default function ResourceCreationForm() {
               {/* Resource Preview Card */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                    formData.status === 'public' 
-                      ? 'bg-green-100 text-green-700 border-green-200' 
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${formData.status === 'public'
+                      ? 'bg-green-100 text-green-700 border-green-200'
                       : 'bg-purple-100 text-purple-700 border-purple-200'
-                  }`}>
+                    }`}>
                     {formData.status === 'public' ? 'Public' : 'Private'}
                   </span>
                   {formData.status === 'public' ? (
@@ -449,11 +447,11 @@ export default function ResourceCreationForm() {
                     <Lock className="w-4 h-4 text-purple-500" />
                   )}
                 </div>
-                
+
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
                   {formData.name || 'Your awesome resource name'}
                 </h3>
-                
+
                 <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                   {formData.description || 'Your resource description will appear here...'}
                 </p>
@@ -461,7 +459,7 @@ export default function ResourceCreationForm() {
                 {formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {formData.tags.slice(0, 3).map((tag, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="bg-gray-50 text-gray-600 px-2 py-1 rounded-lg text-xs"
                       >
@@ -483,9 +481,9 @@ export default function ResourceCreationForm() {
                       {formData.userEmail ? formData.userEmail.split('@')[0] : 'Your username'}
                     </span>
                   </div>
-                  
+
                   {formData.link && (
-                    <a 
+                    <a
                       href={formData.link}
                       target="_blank"
                       rel="noopener noreferrer"
