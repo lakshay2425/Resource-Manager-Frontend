@@ -31,14 +31,13 @@ export default function AllResourcesPage() {
   const [activeTab, setActiveTab] = useState('all'); // all, private, public
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { gmail } = useContext(AuthContext);
+  // const [isLoading, setIsLoading] = useState(true);
+  const { gmail , isLoading, setIsLoading} = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true);
-        // const response = await axiosInstance.get("/resources?email=lakshay12290@gmail.com");
+        // setIsLoading(true);
         const response = await axiosInstance.get(`/resources?email=${gmail}`, {
           withCredentials: true
         });
@@ -236,14 +235,12 @@ export default function AllResourcesPage() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <LoadingBar message={"Loading Your Resources..."} />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <>
+    {isLoading === true ? (
+            <LoadingBar message={"Loading Your Resources..."} />
+    ) : (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-white/20">
@@ -441,6 +438,8 @@ export default function AllResourcesPage() {
         )}
       </div>
     </div>
+    )} 
+</>
   );
 }
 
