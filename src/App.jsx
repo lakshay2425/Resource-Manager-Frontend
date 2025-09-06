@@ -12,6 +12,7 @@ const Footer = lazy(()=> import("./components/Footer.jsx"))
 const ScrollToTop = lazy(()=> import('./utilis/scrollToTop.jsx'))
 const NotFound = lazy(()=> import("./pages/NotFound.jsx"))
 const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
+const LoadingScreen = lazy(()=> import("./components/LoadingScreen.jsx"))
 
 function App() {
   useEffect(() => {
@@ -37,6 +38,7 @@ function App() {
 
   return (
     <>
+    <LoadingScreen>
     <Navbar/>
     <ScrollToTop/>
     <Suspense fallback={<Spinner message={"Loading Resources..."}/>}>
@@ -51,9 +53,10 @@ function App() {
           condition={isAuthenticated === true}
           renderPage={<ResourceCreationForm />}
           fallback='/'
+          
           errorMessage='You need to login to access this page'
-           />
-          } />
+          />
+        } />
 
         <Route path='/resources' element={
           <RenderProtectedRoute
@@ -62,22 +65,23 @@ function App() {
           fallback='/'
           errorMessage='You need to login to access this page'
           />
-          }
-          />
+        }
+        />
 
           <Route path='/edit/:id' element={
-          <RenderProtectedRoute
-          condition={isAuthenticated === true}
-          renderPage={<EditResource />}
-          fallback='/'
-          errorMessage='You need to login to access this page'
-          />
+            <RenderProtectedRoute
+            condition={isAuthenticated === true}
+            renderPage={<EditResource />}
+            fallback='/'
+            errorMessage='You need to login to access this page'
+            />
           }
           />
           <Route path='*' element={<NotFound/>}/>
       </Routes>
       </Suspense>
     <Footer/>
+      </LoadingScreen>
     </>
   )
 }
