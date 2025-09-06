@@ -29,8 +29,8 @@ const HeroSection = () => {
                 Say goodbye to lost resources and hello to organized, accessible knowledge management! 🚀
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button onClick={()=> isAuthenticated === false ? handleGoogleLogin() : navigate("/resources")  } className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
-                  Start Organizing Now
+                <button onClick={()=> isAuthenticated === true ?  navigate("/createResource") : handleGoogleLogin()  } className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                  {isAuthenticated? "Create Resource" : "Start Organizing Now"}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>
                 <button onClick={()=> navigate("/publicResources")} className="border-2 border-purple-200 text-purple-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-50 transition-colors">
