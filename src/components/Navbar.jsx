@@ -38,8 +38,10 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    const response = await axios.post(`${authService}/users/logout`);
-    if (response.status === 204) {
+    const response = await axios.post(`${authService}/users/logout`, null,{
+      withCredentials: true
+    });
+    if (response.status === 200) {
       setUser(null);
       setIsAuthenticated(false);
       setGmail(null);
