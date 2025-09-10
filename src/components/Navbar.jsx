@@ -39,7 +39,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    const response = await axios.post(`${authService}/users/logout`, null,{
+    const response = await axios.post(`${authService}/users/logout`, null, {
       withCredentials: true
     });
     if (response.status === 200) {
@@ -153,7 +153,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-white/30 py-4 shadow-xl shadow-purple-500/5">
             <div className="flex flex-col space-y-3 px-4">
-              {isAuthenticated  ? (
+              {isAuthenticated ? (
                 <>
                   {/* Mobile Navigation Links */}
                   {navigationLinks.map((link) => {
@@ -162,6 +162,7 @@ const Navbar = () => {
                       <Link
                         key={link.href}
                         to={link.href}
+                        onClick={() => setIsMenuOpen(false)}
                         className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-all duration-200 px-3 py-3 rounded-xl hover:bg-purple-50/50"
                       >
                         <IconComponent className="w-5 h-5" />
@@ -174,7 +175,7 @@ const Navbar = () => {
                   <div className="border-t border-gray-100/50 pt-4 mt-4">
                     <div className="flex items-center space-x-3 px-3 py-2 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-                        <img src={user.profileImage ||  profileImage} alt="User Profile Image" />
+                        <img src={user.profileImage || profileImage} alt="User Profile Image" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-700">{user.name}</p>
@@ -182,7 +183,11 @@ const Navbar = () => {
                       </div>
                     </div>
                     <button
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+
                       className="flex items-center space-x-3 text-red-600 hover:bg-red-50/50 transition-all duration-200 px-3 py-3 rounded-xl w-full text-left"
                     >
                       <LogOut className="w-5 h-5" />
@@ -193,9 +198,21 @@ const Navbar = () => {
               ) : (
                 /* Mobile Logged Out State */
                 <>
-                  <button onClick={() => navigateToSection("features")} className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Features</button>
-                  <button onClick={() => navigateToSection("why-us")} className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Why ResourceHub?</button>
-                  <button onClick={() => navigateToSection("discord")} className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Discord Bot</button>
+                  <button onClick={() => {
+                    navigateToSection("features");
+                    setIsMenuOpen(false);
+                  }}
+                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Features</button>
+                  <button onClick={() => {
+                    navigateToSection("why-us");
+                    setIsMenuOpen(false);
+                  }}
+                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Why ResourceHub?</button>
+                  <button onClick={() => {
+                    navigateToSection("discord");
+                    setIsMenuOpen(false);
+                  }}
+                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Discord Bot</button>
                   <button
                     onClick={() => handleGoogleLogin()}
                     className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 w-full font-medium shadow-lg shadow-purple-500/20 mt-4"
