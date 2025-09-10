@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useGoogleAuth } from "../hooks/useGoogleOAuth.js";
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
 import useSectionNavigation from '../hooks/useNavigation.js';
+import profileImage from "./profileImagePlaceholder.png"
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -44,7 +45,8 @@ const Navbar = () => {
     if (response.status === 200) {
       setUser(null);
       setIsAuthenticated(false);
-      setGmail(null);
+      setGmail("");
+      navigate("/")
       toast.success("Logged out successfully");
       setIsProfileOpen(false);
     }
@@ -96,7 +98,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 p-2 rounded-xl hover:bg-purple-50/50 transition-all duration-200 group border border-transparent hover:border-purple-200/50"
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                      <User className="w-4 h-4 text-white" /><img src={user?.profilePic} />
+                      <User className="w-4 h-4 text-white" /><img src={user?.profilePic || profileImage} />
                     </div>
                     <span className="font-medium text-gray-700 group-hover:text-purple-600">{user?.name || "Guest"}  </span>
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -151,7 +153,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-white/30 py-4 shadow-xl shadow-purple-500/5">
             <div className="flex flex-col space-y-3 px-4">
-              {isAuthenticated ? (
+              {isAuthenticated  ? (
                 <>
                   {/* Mobile Navigation Links */}
                   {navigationLinks.map((link) => {
@@ -172,7 +174,7 @@ const Navbar = () => {
                   <div className="border-t border-gray-100/50 pt-4 mt-4">
                     <div className="flex items-center space-x-3 px-3 py-2 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-                        <img src={user.profileImage} alt="User Profile Image" />
+                        <img src={user.profileImage ||  profileImage} alt="User Profile Image" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-700">{user.name}</p>
