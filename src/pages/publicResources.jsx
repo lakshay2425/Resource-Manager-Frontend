@@ -21,7 +21,7 @@ export default function PublicResourcesPage() {
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   // eslint-disable-next-line no-unused-vars
-  const [isLoading ,setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,125 +74,102 @@ export default function PublicResourcesPage() {
   }, [resources, searchTerm, selectedCategory, sortBy]);
 
 const ResourceCard = ({ resource, isListView = false }) => {
-  const [showAllTags, setShowAllTags] = useState(false);
-  
-  // Show only first 3 tags on mobile, all on larger screens
-  const visibleTags = showAllTags ? resource.tags : resource.tags.slice(0, 3);
-  const hasMoreTags = resource.tags.length > 3;
+    const [showAllTags, setShowAllTags] = useState(false);
 
-  return (
-    <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group ${
-      isListView 
-        ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6' 
-        : 'p-4 sm:p-6'
-    }`}>
-      <div className={`${isListView ? 'flex-1' : ''}`}>
-        <div className={`flex ${
-          isListView 
-            ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0' 
-            : 'items-start justify-between mb-3 sm:mb-4'
+    // Show only first 3 tags on mobile, all on larger screens
+    const visibleTags = showAllTags ? resource.tags : resource.tags.slice(0, 3);
+    const hasMoreTags = resource.tags.length > 3;
+
+    return (
+      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group ${isListView
+          ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
+          : 'p-4 sm:p-6'
         }`}>
-          <div className={`${isListView ? 'flex-1' : ''}`}>
-            <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
-              <span className={`px-2 py-1 sm:px-3 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resource.tags[0])}`}>
-                <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-                <span className="hidden xs:inline">{resource.tags[0]}</span>
-              </span>
-              {resource.tags.length > 1 && (
-                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                  +{resource.tags.length - 1} more
-                </span>
-              )}
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors leading-tight">
-              {resource.name}
-            </h3>
-            <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${
-              isListView ? '' : 'mb-3 sm:mb-4'
+        <div className={`${isListView ? 'flex-1' : ''}`}>
+          <div className={`flex ${isListView
+              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
+              : 'items-start justify-between mb-3 sm:mb-4'
             }`}>
-              {resource.description}
-            </p>
-          </div>
-
-          {!isListView && (
-            <div className="flex-shrink-0 ml-2">
-              <a
-                href={resource.sourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-2 sm:p-3 rounded-full hover:shadow-lg transform hover:scale-110 transition-all duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-          )}
-        </div>
-
-        {/* All Tags */}
-        <div className={`${isListView ? 'mb-3 sm:mb-3' : 'mb-3 sm:mb-4'}`}>
-          <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
-            {visibleTags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-gray-50 text-gray-600 px-2 py-1 rounded-md sm:rounded-lg text-xs hover:bg-purple-50 hover:text-purple-600 transition-colors cursor-pointer flex items-center space-x-1"
-              >
-                <CategoryIcon category={tag} className="w-3 h-3" />
-                <span>#{tag}</span>
-              </span>
-            ))}
-          </div>
-          
-          {/* Show More/Less button for tags on mobile */}
-          {hasMoreTags && (
-            <button
-              onClick={() => setShowAllTags(!showAllTags)}
-              className="flex items-center space-x-1 text-xs text-purple-600 hover:text-purple-800 transition-colors sm:hidden"
-            >
-              <span>{showAllTags ? 'Show less' : `Show ${resource.tags.length - 3} more`}</span>
-              {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          )}
-        </div>
-
-        {/* User and Stats */}
-        <div className={`flex ${
-          isListView 
-            ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4' 
-            : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
-        }`}>
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{resource.email}</p>
-              <p className="text-xs text-gray-500">Shared Resource</p>
+            <div className={`${isListView ? 'flex-1' : ''}`}>
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                <span className={`px-2 py-1 sm:px-3 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resource.tags[0])}`}>
+                  <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
+                  <span className="hidden xs:inline">{resource.tags[0]}</span>
+                </span>
+                {resource.tags.length > 1 && (
+                  <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                    +{resource.tags.length - 1} more
+                  </span>
+                )}
+              </div>
+              
+              {/* Made title clickable with proper link */}
+              <h3 className="text-lg sm:text-xl font-bold mb-2 leading-tight">
+                <a 
+                  href={resource.sourceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-600 hover:text-purple-800 transition-colors cursor-pointer  hover:decoration-purple-500 decoration-2 underline-offset-2"
+                >
+                  {resource.name}
+                </a>
+              </h3>
+              
+              <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${isListView ? '' : 'mb-3 sm:mb-4'
+                }`}>
+                {resource.description}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-end sm:justify-start flex-shrink-0">
-            {isListView && (
-              <a
-                href={resource.sourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 sm:px-4 rounded-full text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 w-full sm:w-auto justify-center min-h-[36px] z-10"
+          {/* All Tags */}
+          <div className={`${isListView ? 'mb-3 sm:mb-3' : 'mb-3 sm:mb-4'}`}>
+            <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
+              {visibleTags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-50 text-gray-600 px-2 py-1 rounded-md sm:rounded-lg text-xs hover:bg-purple-50 hover:text-purple-600 transition-colors cursor-pointer flex items-center space-x-1"
+                >
+                  <CategoryIcon category={tag} className="w-3 h-3" />
+                  <span>#{tag}</span>
+                </span>
+              ))}
+            </div>
+
+            {/* Show More/Less button for tags on mobile */}
+            {hasMoreTags && (
+              <button
+                onClick={() => setShowAllTags(!showAllTags)}
+                className="flex items-center space-x-1 text-xs text-purple-600 hover:text-purple-800 transition-colors sm:hidden"
               >
-                <span>Visit</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </a>
+                <span>{showAllTags ? 'Show less' : `Show ${resource.tags.length - 3} more`}</span>
+                {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
             )}
+          </div>
+
+          {/* User and Stats */}
+          <div className={`flex ${isListView
+              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
+              : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
+            }`}>
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{resource.email}</p>
+                <p className="text-xs text-gray-500">Shared Resource</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-
+    );
+  };
 
   return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
