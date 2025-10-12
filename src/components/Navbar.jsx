@@ -129,7 +129,6 @@ const Navbar = () => {
               <>
                 <button onClick={() => navigateToSection("features")} className="text-gray-700 hover:text-purple-600 transition-colors font-medium">Features</button>
                 <button onClick={() => navigateToSection("why-us")} className="text-gray-700 hover:text-purple-600 transition-colors font-medium">Why ResourceHub?</button>
-                {/* <button onClick={() => navigateToSection("discord")} className="text-gray-700 hover:text-purple-600 transition-colors font-medium">Discord Bot</button> */}
                 <button
                   onClick={() => handleGoogleLogin()}
                   className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 text-white px-6 py-2.5 rounded-full hover:shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/20"
@@ -208,11 +207,6 @@ const Navbar = () => {
                     setIsMenuOpen(false);
                   }}
                     className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Why ResourceHub?</button>
-                  {/* <button onClick={() => {
-                    navigateToSection("discord");
-                    setIsMenuOpen(false);
-                  }}
-                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Discord Bot</button> */}
                   <button
                     onClick={() => handleGoogleLogin()}
                     className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 w-full font-medium shadow-lg shadow-purple-500/20 mt-4"
