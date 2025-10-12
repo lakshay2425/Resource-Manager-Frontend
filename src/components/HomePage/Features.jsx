@@ -49,7 +49,7 @@ const Features = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-pink-100">
+          {/* <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-pink-100">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mb-4 sm:mb-6">
               <Edit3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
@@ -57,7 +57,7 @@ const Features = () => {
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               Create, read, update, delete - complete control over your resource collection.
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>
