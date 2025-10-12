@@ -1,7 +1,7 @@
 import HeroSection from '../components/HomePage/HeroSection.jsx';
 import Features from '../components/HomePage/Features.jsx';
 import WhyRH from '../components/HomePage/WhyRH.jsx';
-import DiscordBot from '../components/HomePage/DiscordBot.jsx';
+// import DiscordBot from '../components/HomePage/DiscordBot.jsx';
 
 export default function ResourceManagerLanding() {
   return (
@@ -16,9 +16,9 @@ export default function ResourceManagerLanding() {
       <WhyRH />
      </section>
 
-      <section id='discord'>
+      {/* <section id='discord'>
         <DiscordBot/>
-      </section>
+      </section> */}
     </div>
   );
 }
