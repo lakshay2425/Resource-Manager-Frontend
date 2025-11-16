@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useContext } from 'react';
 import {
   Search,
   BookmarkPlus,
-  Globe,
+  Globe,Bookmark,
   ArrowUpRight,
   X,
   Grid,
@@ -38,7 +38,7 @@ export default function AllResourcesPage() {
     const fetchData = async () => {
       try {
         // setIsLoading(true);
-        const response = await axiosInstance.get(`/resources?email=${gmail}`, {
+        const response = await axiosInstance.get(`/resources`, {
           withCredentials: true
         });
         setResources(response.data.data || []);
@@ -51,6 +51,16 @@ export default function AllResourcesPage() {
     };
     fetchData();
   }, [gmail]);
+
+  // Handle bookmark change
+  const handleBookmarkChange = (resourceId, isBookmarked) => {
+    // Update local state
+    setResources(prev =>
+      prev.map(r =>
+        r._id === resourceId ? { ...r, isBookmarked } : r
+      )
+    );
+  };
 
   // Get unique categories from resources
   const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
@@ -117,23 +127,78 @@ export default function AllResourcesPage() {
     if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
         await axiosInstance.delete(`/resources?id=${resourceId}`);
-        setResources(prevResources =>
-          prevResources.filter(resource => resource._id !== resourceId)
-        );
+        setResources(prevResources => prevResources.filter(resource => resource._id !== resourceId));
       } catch (error) {
         console.error('Error deleting resource:', error);
       }
     }
   };
 
-  const ResourceCard = ({ resource, isListView = false }) => {
+  const ResourceCard = ({ resource, isListView = false , onBookmarkChange }) => {
+      const navigate = useNavigate();
+  const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Handle bookmark toggle
+  const handleBookmark = async (e) => {
+    e.stopPropagation(); // Prevent triggering parent clicks
+
+    // Optimistic UI update
+    setIsBookmarked(!isBookmarked);
+    setIsAnimating(true);
+
+    setTimeout(() => setIsAnimating(false), 600); // Animation duration
+
+    // try {
+    //   if (isBookmarked) {
+    //     // Remove bookmark
+    //     await axios.delete(`/api/bookmarks/${resource._id}`);
+    //     toast.success('Bookmark removed');
+    //   } else {
+    //     // Add bookmark
+    //     await axios.post('/api/bookmarks', {
+    //       resourceId: resource._id
+    //     });
+    //     toast.success('Resource bookmarked!');
+    //   }
+
+    //   // Notify parent component (optional)
+    //   if (onBookmarkChange) {
+    //     onBookmarkChange(resource._id, !isBookmarked);
+    //   }
+
+    // } catch (error) {
+    //   // Revert on error
+    //   setIsBookmarked(isBookmarked);
+    //   console.error('Bookmark error:', error);
+    //   toast.error(error.response?.data?.error || 'Failed to update bookmark');
+    // }
+  };
     return (
       <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${
         isListView 
           ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6' 
           : 'p-4 sm:p-6'
       }`}>
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2">
+                  {/* Bookmark Button - Instagram Style */}
+        <button
+          onClick={handleBookmark}
+          className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
+            isBookmarked 
+              ? 'bg-purple-50 text-purple-600' 
+              : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
+          }`}
+          title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
+        >
+          <Bookmark
+            className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
+              isAnimating ? 'scale-125' : 'scale-100'
+            }`}
+            fill={isBookmarked ? 'currentColor' : 'none'}
+            strokeWidth={2}
+          />
+        </button>
           {resource.status === 'private' ? (
             <div className="flex items-center space-x-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 rounded-full text-xs">
               <Lock className="w-3 h-3" />
@@ -419,6 +484,7 @@ export default function AllResourcesPage() {
                     key={resource._id}
                     resource={resource}
                     isListView={viewMode === 'list'}
+                              onBookmarkChange={handleBookmarkChange}
                   />
                 ))}
               </div>

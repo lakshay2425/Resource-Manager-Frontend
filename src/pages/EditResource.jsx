@@ -128,7 +128,7 @@ export default function EditResourcePage() {
       // Send the PATCH request with only the dirty fields
       const response = await axiosInstance.patch(`/resources/`, {updatedFields, id});
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         toast.success("Resource updated successfully", { id: saveToastId });
         reset(data); 
         navigate("/resources");
