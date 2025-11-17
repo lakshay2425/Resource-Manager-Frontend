@@ -1,24 +1,14 @@
 import LoadingBar from "../components/LoadingBar.jsx";
-import { getInitials } from "../utilis/getInitials.js";
-import { getCategoryColor } from "../utilis/getCategoryColor.js"
-import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, useMemo, useContext } from 'react';
-import {
-  Search,
-  BookmarkPlus,
-  Globe,Bookmark,
-  ArrowUpRight,
-  X,
-  Grid,
-  List,
-  Edit3,
-  Lock,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { Search,BookmarkPlus,Globe,X,Bookmark,ArrowUpRight, Edit3, Trash2,Grid,List,Lock,Plus,} from 'lucide-react';
+import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from "../context/AuthContext.jsx";
+import { handleDeleteResource } from "../utilis/deleteResource.js";
+import { getCategoryColor } from "../utilis/getCategoryColor.js";
+import { getInitials } from "../utilis/getInitials.js";
+import toast from "react-hot-toast";
 
 export default function AllResourcesPage() {
   const navigate = useNavigate();
@@ -31,8 +21,8 @@ export default function AllResourcesPage() {
   const [activeTab, setActiveTab] = useState('all'); // all, private, public
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
-  // const [isLoading, setIsLoading] = useState(true);
-  const { gmail , isLoading, setIsLoading} = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const { gmail } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,7 +40,7 @@ export default function AllResourcesPage() {
       }
     };
     fetchData();
-  }, [gmail]);
+  }, [gmail, setIsLoading]);
 
   // Handle bookmark change
   const handleBookmarkChange = (resourceId, isBookmarked) => {
@@ -121,27 +111,14 @@ export default function AllResourcesPage() {
 
   const stats = getStats();
 
-
-
-  const handleDeleteResource = async (resourceId) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
-      try {
-        await axiosInstance.delete(`/resources?id=${resourceId}`);
-        setResources(prevResources => prevResources.filter(resource => resource._id !== resourceId));
-      } catch (error) {
-        console.error('Error deleting resource:', error);
-      }
-    }
-  };
-
-  const ResourceCard = ({ resource, isListView = false , onBookmarkChange }) => {
+  const ResourceCard = ({ resource, isListView = false , onBookmarkChange , setResources}) => {
       const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Handle bookmark toggle
-  const handleBookmark = async (e) => {
-    e.stopPropagation(); // Prevent triggering parent clicks
+  const handleBookmark = async (resourceId) => {
+    // e.stopPropagation(); // Prevent triggering parent clicks
 
     // Optimistic UI update
     setIsBookmarked(!isBookmarked);
@@ -149,31 +126,32 @@ export default function AllResourcesPage() {
 
     setTimeout(() => setIsAnimating(false), 600); // Animation duration
 
-    // try {
-    //   if (isBookmarked) {
-    //     // Remove bookmark
-    //     await axios.delete(`/api/bookmarks/${resource._id}`);
-    //     toast.success('Bookmark removed');
-    //   } else {
-    //     // Add bookmark
-    //     await axios.post('/api/bookmarks', {
-    //       resourceId: resource._id
-    //     });
-    //     toast.success('Resource bookmarked!');
-    //   }
-
-    //   // Notify parent component (optional)
-    //   if (onBookmarkChange) {
-    //     onBookmarkChange(resource._id, !isBookmarked);
-    //   }
-
-    // } catch (error) {
-    //   // Revert on error
-    //   setIsBookmarked(isBookmarked);
-    //   console.error('Bookmark error:', error);
-    //   toast.error(error.response?.data?.error || 'Failed to update bookmark');
-    // }
+    try {
+      if(isBookmarked){
+        const response = await axiosInstance.delete(`/bookmarks/${resourceId}`);
+        if(response.status === 200){
+          toast.success("Resource removed from bookmarked successfully");
+        } 
+      }else{
+        const response = await axiosInstance.post("/bookmarks", {
+        id: resourceId
+      }) 
+      if(response.status === 201){
+        toast.success("Resource bookmarked successfully");
+      }
+      }
+      // Notify parent component (optional)
+     if (onBookmarkChange) {
+       onBookmarkChange(resource._id, !isBookmarked);
+     }
+    } catch (error) {
+      console.log(error);
+      if(error?.status === 404) return toast.error('Resource is already bookmarked'); 
+      console.error(error.message, "Error in updating the bookmark status");
+      toast.error("Failed to update resource bookmark status")
+    }
   };
+
     return (
       <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${
         isListView 
@@ -183,7 +161,7 @@ export default function AllResourcesPage() {
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2">
                   {/* Bookmark Button - Instagram Style */}
         <button
-          onClick={handleBookmark}
+          onClick={()=> handleBookmark(resource._id)}
           className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
             isBookmarked 
               ? 'bg-purple-50 text-purple-600' 
@@ -285,7 +263,7 @@ export default function AllResourcesPage() {
                   <Edit3 className="w-4 h-4 transform group-hover/edit:scale-110 transition-transform duration-200" />
                 </button>
                 <button
-                  onClick={() => handleDeleteResource(resource._id)}
+                  onClick={() => handleDeleteResource(resource._id, setResources)}
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                   title="Delete Resource"
                 >
@@ -307,12 +285,29 @@ export default function AllResourcesPage() {
       </div>
     );
   };
-  
+
+   // Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center space-x-3 mb-6 sm:mb-8">
+            <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" fill="currentColor" />
+            <h1 className="text-2xl sm:text-3xl font-bold">My Resources</h1>
+          </div>
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-purple-600 mb-4"></div>
+            <p className="text-gray-600 text-sm sm:text-base">Loading your resources...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <>
-    {isLoading === true ? (
-            <LoadingBar message={"Loading Your Resources..."} />
-    ) : (
+      {isLoading === true ? (
+        <LoadingBar message={"Loading Your Resources..."} />
+      ) : (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
           {/* Header */}
           <div className="bg-white/80 backdrop-blur-md border-b border-white/20">
@@ -346,31 +341,28 @@ export default function AllResourcesPage() {
               <div className="flex space-x-1 bg-gray-100 rounded-lg sm:rounded-xl p-1 mt-4 sm:mt-6 w-full overflow-x-auto">
                 <button
                   onClick={() => setActiveTab('all')}
-                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${
-                    activeTab === 'all'
+                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'all'
                       ? 'bg-white text-purple-600 shadow-sm'
                       : 'text-gray-600 hover:text-purple-600'
-                  }`}
+                    }`}
                 >
                   All Resources ({stats.totalCount})
                 </button>
                 <button
                   onClick={() => setActiveTab('private')}
-                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${
-                    activeTab === 'private'
+                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'private'
                       ? 'bg-white text-purple-600 shadow-sm'
                       : 'text-gray-600 hover:text-purple-600'
-                  }`}
+                    }`}
                 >
                   Private ({stats.privateCount})
                 </button>
                 <button
                   onClick={() => setActiveTab('public')}
-                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${
-                    activeTab === 'public'
+                  className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'public'
                       ? 'bg-white text-purple-600 shadow-sm'
                       : 'text-gray-600 hover:text-purple-600'
-                  }`}
+                    }`}
                 >
                   Public ({stats.publicCount})
                 </button>
@@ -427,17 +419,15 @@ export default function AllResourcesPage() {
                   <div className="flex bg-white rounded-lg sm:rounded-xl p-1 shadow-sm border border-gray-200 w-full sm:w-auto justify-center">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${
-                        viewMode === 'grid' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
-                      }`}
+                      className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
+                        }`}
                     >
                       <Grid className="w-4 h-4 mx-auto" />
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${
-                        viewMode === 'list' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
-                      }`}
+                      className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${viewMode === 'list' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
+                        }`}
                     >
                       <List className="w-4 h-4 mx-auto" />
                     </button>
@@ -484,7 +474,8 @@ export default function AllResourcesPage() {
                     key={resource._id}
                     resource={resource}
                     isListView={viewMode === 'list'}
-                              onBookmarkChange={handleBookmarkChange}
+                    onBookmarkChange={handleBookmarkChange}
+                    setResources={setResources}
                   />
                 ))}
               </div>
@@ -516,7 +507,7 @@ export default function AllResourcesPage() {
                       Clear Filters
                     </button>
                   )}
-                  <button 
+                  <button
                     onClick={() => navigate("/createResource")}
                     className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 w-full sm:w-auto"
                   >
@@ -528,8 +519,8 @@ export default function AllResourcesPage() {
             )}
           </div>
         </div>
-    )} 
-</>
+      )}
+    </>
   );
 }
 
