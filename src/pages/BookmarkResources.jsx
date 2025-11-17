@@ -20,13 +20,7 @@ const Bookmarks = () => {
       setError(null);
       
       const response = await axiosInstance.get('/bookmarks');
-      
-      // Validate and filter bookmarks to ensure they have valid resourceId
-    //   const validBookmarks = (response.data.bookMarkedResouces || []).filter(bookmark => {
-    //     // Check if bookmark has a valid resourceId object
-    //     return bookmark && bookmark.resourceId && typeof bookmark.resourceId === 'object';
-    //   });
-      
+      console.log(response.data.bookMarkedResouces, "Bookmarked resources");      
       setBookmarks(response.data.bookMarkedResouces);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
@@ -34,9 +28,7 @@ const Bookmarks = () => {
       // Enhanced error handling with specific error messages
       if (error.response) {
         // Server responded with error status
-        if (error.response.status === 401) {
-          setError('Please log in to view your bookmarks.');
-        }else if (error.response.status === 500) {
+        if (error.response.status === 500) {
           setError('Server error. Please try again later.');
         } else {
           setError(error.response.data?.message || 'Failed to load bookmarks.');
