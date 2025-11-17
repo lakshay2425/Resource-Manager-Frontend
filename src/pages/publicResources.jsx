@@ -4,9 +4,7 @@ import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, } from 'react';
 import {
   Search,
-  ExternalLink,
   Globe,
-  ArrowUpRight,
   X,
   Grid,
   List,
