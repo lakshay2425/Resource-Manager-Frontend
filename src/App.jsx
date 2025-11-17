@@ -13,6 +13,7 @@ const ScrollToTop = lazy(()=> import('./utilis/scrollToTop.jsx'))
 const NotFound = lazy(()=> import("./pages/NotFound.jsx"))
 const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
 const LoadingScreen = lazy(()=> import("./components/LoadingScreen.jsx"))
+const Bookmark = lazy(()=> import("./pages/BookmarkResources.jsx"))
 
 function App() {
   useEffect(() => {
@@ -45,12 +46,21 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/publicResources" element={<PublicResources />} />
-        
+        <Route
+        path='/bookmarks'
+        element={
+          <RenderProtectedRoute
+          fallback="/"
+          condition={isAuthenticated}
+          renderPage={<Bookmark/>}
+          />
+        }
+        />
         <Route 
         path="/createResource" 
         element={
           <RenderProtectedRoute
-          condition={isAuthenticated === true}
+          condition={isAuthenticated}
           renderPage={<ResourceCreationForm />}
           fallback='/'
           
@@ -60,7 +70,7 @@ function App() {
 
         <Route path='/resources' element={
           <RenderProtectedRoute
-          condition={isAuthenticated === true}
+          condition={isAuthenticated}
           renderPage={<Resource />}
           fallback='/'
           errorMessage='You need to login to access this page'
@@ -70,7 +80,7 @@ function App() {
 
           <Route path='/edit/:id' element={
             <RenderProtectedRoute
-            condition={isAuthenticated === true}
+            condition={isAuthenticated}
             renderPage={<EditResource />}
             fallback='/'
             errorMessage='You need to login to access this page'
