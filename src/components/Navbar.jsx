@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { BookmarkPlus, Menu, X, User, LogOut, Home, Bookmark, ChevronDown } from 'lucide-react';
+import { BookmarkPlus, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate, Link } from "react-router-dom";
 import axios from 'axios';
@@ -20,8 +20,6 @@ const Navbar = () => {
 
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
-
-
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -52,10 +50,34 @@ const Navbar = () => {
     }
   };
 
-
+  // Updated navigation links array with the new Bookmarks and Create Resource links
+  // The order here determines the order they appear in your navbar
   const navigationLinks = [
-    { href: '/publicResources', label: 'Public Resources', icon: Home },
-    { href: '/resources', label: 'Resources', icon: Bookmark },
+    { 
+      href: '/publicResources', 
+      label: 'Public Resources', 
+      icon: Home,
+      description: 'Browse all public resources' // Optional: useful for accessibility
+    },
+    { 
+      href: '/resources', 
+      label: 'My Resources', 
+      icon: BookmarkPlus,
+      description: 'View and manage your resources'
+    },
+    { 
+      href: '/bookmarks', 
+      label: 'Bookmarks', 
+      icon: Bookmark,
+      description: 'View your saved bookmarks'
+    },
+    { 
+      href: '/createResource', 
+      label: 'Create Resource', 
+      icon: PlusCircle,
+      description: 'Add a new resource',
+      highlight: true // Optional: we can use this to style it differently if needed
+    },
   ];
 
   return (
@@ -77,30 +99,42 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-6">
             {isAuthenticated ? (
               <>
-                {/* Navigation Links */}
+                {/* Navigation Links - Now includes all 4 links */}
                 {navigationLinks.map((link) => {
                   const IconComponent = link.icon;
                   return (
                     <Link
                       key={link.href}
                       to={link.href}
-                      className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-all duration-200 px-3 py-2 rounded-lg hover:bg-purple-50/50 group"
+                      // Added conditional styling for the "Create Resource" button to make it stand out
+                      className={`flex items-center space-x-2 transition-all duration-200 px-3 py-2 rounded-lg group ${
+                        link.highlight 
+                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105' 
+                          : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50/50'
+                      }`}
+                      title={link.description} // Adds tooltip on hover for better UX
                     >
-                      <IconComponent className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                      <IconComponent className={`w-4 h-4 group-hover:scale-110 transition-transform duration-200 ${link.highlight ? 'text-white' : ''}`} />
                       <span className="font-medium">{link.label}</span>
                     </Link>
                   );
                 })}
+                
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={toggleProfile}
                     className="flex items-center space-x-2 p-2 rounded-xl hover:bg-purple-50/50 transition-all duration-200 group border border-transparent hover:border-purple-200/50"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                      <User className="w-4 h-4 text-white" /><img src={user?.profilePic || profileImage} />
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md overflow-hidden">
+                      {/* Fixed: Now properly displays user profile image or placeholder */}
+                      {user?.profilePic ? (
+                        <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )}
                     </div>
-                    <span className="font-medium text-gray-700 group-hover:text-purple-600">{user?.name || "Guest"}  </span>
+                    <span className="font-medium text-gray-700 group-hover:text-purple-600">{user?.name || "Guest"}</span>
                     <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -154,17 +188,21 @@ const Navbar = () => {
             <div className="flex flex-col space-y-3 px-4">
               {isAuthenticated ? (
                 <>
-                  {/* Mobile Navigation Links */}
+                  {/* Mobile Navigation Links - All 4 links appear here too */}
                   {navigationLinks.map((link) => {
                     const IconComponent = link.icon;
                     return (
                       <Link
                         key={link.href}
                         to={link.href}
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-all duration-200 px-3 py-3 rounded-xl hover:bg-purple-50/50"
+                        onClick={() => setIsMenuOpen(false)} // Closes menu after navigation
+                        className={`flex items-center space-x-3 transition-all duration-200 px-3 py-3 rounded-xl ${
+                          link.highlight 
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg' 
+                            : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50/50'
+                        }`}
                       >
-                        <IconComponent className="w-5 h-5" />
+                        <IconComponent className={`w-5 h-5 ${link.highlight ? 'text-white' : ''}`} />
                         <span className="font-medium">{link.label}</span>
                       </Link>
                     );
@@ -173,12 +211,16 @@ const Navbar = () => {
                   {/* Mobile Profile Section */}
                   <div className="border-t border-gray-100/50 pt-4 mt-4">
                     <div className="flex items-center space-x-3 px-3 py-2 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
-                        <img src={user.profileImage || profileImage} alt="User Profile Image" />
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md overflow-hidden">
+                        {user?.profilePic ? (
+                          <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <img src={profileImage} alt="Default Profile" className="w-full h-full object-cover" />
+                        )}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-700">{user.name}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
+                        <p className="font-medium text-gray-700">{user?.name}</p>
+                        <p className="text-sm text-gray-500">{user?.email}</p>
                       </div>
                     </div>
                     <button
@@ -186,7 +228,6 @@ const Navbar = () => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
-
                       className="flex items-center space-x-3 text-red-600 hover:bg-red-50/50 transition-all duration-200 px-3 py-3 rounded-xl w-full text-left"
                     >
                       <LogOut className="w-5 h-5" />
