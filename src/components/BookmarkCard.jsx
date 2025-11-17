@@ -3,11 +3,11 @@ import { ArrowUpRight, User, Trash2, AlertTriangle, X } from "lucide-react";
 import { getCategoryColor } from "../utilis/getCategoryColor.js";
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
+import toast from "react-hot-toast";
 
-const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
+const BookmarkCard = ({bookmark, onRemoveBookmark }) => {
   // We're working with the bookmark object which contains the resource details
   const resource = bookmark?.resourceId;
-  
   const [isRemoving, setIsRemoving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -17,7 +17,16 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
       setIsRemoving(true);
       
       // Call your API to remove the bookmark
-      await axiosInstance.delete(`/bookmarks/${bookmark._id}`);
+      await axiosInstance.delete(`/bookmarks/${resource._id}`).then(()=> toast.success("Resources removed successfully")).catch((err)=>{
+        console.error("Failed to remove resource from bookmark list");
+        if(err.status === 403){
+          toast.error("You're not authorized to perform this action")
+        }else if(err.status == 404){
+          toast.error("Resource not found")
+        }else{
+          toast.error("Failed to remove resource from bookmark")
+        }
+      });
       
       // Notify parent component to update the list
       if (onRemoveBookmark) {
@@ -32,7 +41,6 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
       alert('Failed to remove bookmark. Please try again.');
       setIsRemoving(false);
     }
-    // Note: We don't set isRemoving to false here because the component will unmount
   };
 
   // Open the confirmation modal
