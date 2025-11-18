@@ -1,12 +1,19 @@
 import axiosInstance from "./Axios.jsx";
+import toast from "react-hot-toast";
+export const handleDeleteResource = async (resource, setResources, resourceToDelete, setIsDeleting, setShowDeleteModal, setResourceToDelete) => {
+  if (!resourceToDelete) return;
 
-export const handleDeleteResource = async (resourceId, setResources) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
-      try {
-        await axiosInstance.delete(`/resources?id=${resourceId}`);
-        setResources(prevResources => prevResources.filter(resource => resource._id !== resourceId));
-      } catch (error) {
-        console.error('Error deleting resource:', error);
-      }
-    }
-  };
+  try {
+    setIsDeleting(true);
+    await axiosInstance.delete(`/resources?id=${resource._id}`);
+    setResources(prevResources => prevResources.filter(resource => resource._id !== resource._id));
+    toast.success('Resource deleted successfully');
+    setShowDeleteModal(false);
+    setResourceToDelete(null);
+  } catch (error) {
+    console.error('Error deleting resource:', error);
+    toast.error('Failed to delete resource. Please try again.');
+  } finally {
+    setIsDeleting(false);
+  }
+};
