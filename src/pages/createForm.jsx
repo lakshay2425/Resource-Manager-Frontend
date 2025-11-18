@@ -135,7 +135,7 @@ export default function ResourceCreationForm() {
 
 
     } catch (error) {
-      console.log(error.message, "Failed to create resource");
+      console.error(error.message, "Failed to create resource");
       toast.error("Failed to create resource. Try again");
     } finally {
       setIsSubmitting(false);

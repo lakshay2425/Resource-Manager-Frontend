@@ -21,13 +21,13 @@ export const AuthProvider = ({ children }) => {
         setGmail("")
       }
     } catch (error) {
-      console.log("Faled to verify", error.message);
+      console.error("Faled to verify", error.message);
     } finally {
       setIsLoading(false);
     }
   }
   useEffect(() => {
-      checkAuthStatus();
+    checkAuthStatus();
   }, [])
 
   const authContextValue = {

@@ -10,8 +10,8 @@ export const useGoogleAuth = () => {
   const { setIsAuthenticated, setGmail } = useContext(AuthContext);
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
-    // eslint-disable-next-line no-unused-vars
-    const [user, setUser] = useLocalStorageState("userInfo", null);
+  // eslint-disable-next-line no-unused-vars
+  const [user, setUser] = useLocalStorageState("userInfo", null);
 
   const googleResponse = async (authResult) => {
     try {
@@ -49,7 +49,7 @@ export const useGoogleAuth = () => {
     ) {
       toast.error("Account selection canceled.");
     } else {
-      console.log("Google Login Error:", error);
+      console.error("Google Login Error:", error);
       toast.error("Google login failed.");
     }
   };
