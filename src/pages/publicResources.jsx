@@ -1,15 +1,12 @@
 import { getInitials } from "../utilis/getInitials.js";
 import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
-import { useState, useEffect, } from 'react';
-import {
-  Search,
-  Globe,
-  X,
-  Grid,
-  List,
-} from 'lucide-react';
+import { useState, useEffect, useContext, } from 'react';
+import { Search,Globe,X,Grid,List, Bookmark} from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
+import { AuthContext } from "../context/AuthContext.jsx";
+import { handleBookmark } from "../utilis/handleBookmark.js";
+
 
 export default function PublicResourcesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,8 +15,8 @@ export default function PublicResourcesPage() {
   const [viewMode, setViewMode] = useState('grid');
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
-  // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(true)
+  const {isAuthenticated} = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +38,20 @@ export default function PublicResourcesPage() {
 
   // Get unique categories from resources
   const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
+
+   // Handle bookmark change - update the local state when bookmark status changes
+  const handleBookmarkChange = (resourceId, isBookmarked) => {
+    setResources(prev =>
+      prev.map(r =>
+        r._id === resourceId ? { ...r, isBookmarked } : r
+      )
+    );
+    setFilteredResources(prev =>
+      prev.map(r =>
+        r._id === resourceId ? { ...r, isBookmarked } : r
+      )
+    );
+  };
 
   // Filter and sort resources
   useEffect(() => {
@@ -73,17 +84,44 @@ export default function PublicResourcesPage() {
 
 const ResourceCard = ({ resource, isListView = false }) => {
     const [showAllTags, setShowAllTags] = useState(false);
+    const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
+    const [isAnimating, setIsAnimating] = useState(false);
+
 
     // Show only first 3 tags on mobile, all on larger screens
     const visibleTags = showAllTags ? resource.tags : resource.tags.slice(0, 3);
     const hasMoreTags = resource.tags.length > 3;
 
     return (
-      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group ${isListView
+      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${isListView
           ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
           : 'p-4 sm:p-6'
         }`}>
-        <div className={`${isListView ? 'flex-1' : ''}`}>
+        
+        {/* Bookmark Button - Only visible when authenticated */}
+        {isAuthenticated && (
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+            <button
+              onClick={()=> handleBookmark(resource._id, setIsAnimating,setIsBookmarked,isBookmarked,handleBookmarkChange)}
+              className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
+                isBookmarked 
+                  ? 'bg-purple-50 text-purple-600' 
+                  : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
+              }`}
+              title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
+            >
+              <Bookmark
+                className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
+                  isAnimating ? 'scale-125' : 'scale-100'
+                }`}
+                fill={isBookmarked ? 'currentColor' : 'none'}
+                strokeWidth={2}
+              />
+            </button>
+          </div>
+        )}
+
+        <div className={`${isListView ? 'flex-1' : ''} ${isAuthenticated ? 'pt-8 sm:pt-6' : ''}`}>
           <div className={`flex ${isListView
               ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
               : 'items-start justify-between mb-3 sm:mb-4'
@@ -107,7 +145,7 @@ const ResourceCard = ({ resource, isListView = false }) => {
                   href={resource.sourceLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-purple-600 hover:text-purple-800 transition-colors cursor-pointer  hover:decoration-purple-500 decoration-2 underline-offset-2"
+                  className="text-purple-600 hover:text-purple-800 transition-colors cursor-pointer hover:decoration-purple-500 decoration-2 underline-offset-2"
                 >
                   {resource.name}
                 </a>
@@ -165,6 +203,24 @@ const ResourceCard = ({ resource, isListView = false }) => {
       </div>
     );
   };
+
+  // Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center space-x-3 mb-6 sm:mb-8">
+            <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" fill="currentColor" />
+            <h1 className="text-2xl sm:text-3xl font-bold">My Resources</h1>
+          </div>
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-purple-600 mb-4"></div>
+            <p className="text-gray-600 text-sm sm:text-base">Loading your resources...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
