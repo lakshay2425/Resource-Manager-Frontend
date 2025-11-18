@@ -20,7 +20,6 @@ const Bookmarks = () => {
       setError(null);
       
       const response = await axiosInstance.get('/bookmarks');
-      console.log(response.data.bookMarkedResouces, "Bookmarked resources");      
       setBookmarks(response.data.bookMarkedResouces);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);

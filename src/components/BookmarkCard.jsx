@@ -102,7 +102,7 @@ const BookmarkCard = ({bookmark, onRemoveBookmark }) => {
           {/* Owner Information and Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0">
             {/* Resource Owner */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-white" />
               </div>
@@ -114,12 +114,12 @@ const BookmarkCard = ({bookmark, onRemoveBookmark }) => {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between sm:justify-end space-x-2">
+            {/* Action Buttons - Fixed spacing and layout for mobile */}
+            <div className="flex items-center justify-end space-x-2 sm:space-x-3 flex-shrink-0">
               {/* Remove Bookmark Button */}
               <button
                 onClick={openDeleteModal}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors group/delete"
+                className="p-2 text-gray-400 hover:text-red-500 transition-colors group/delete flex-shrink-0"
                 title="Remove from bookmarks"
               >
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 group-hover/delete:scale-110 transition-transform duration-200" />
@@ -130,7 +130,7 @@ const BookmarkCard = ({bookmark, onRemoveBookmark }) => {
                 href={resource?.sourceLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 flex-shrink-0"
+                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-1 sm:space-x-2 flex-shrink-0"
               >
                 <span>Visit</span>
                 <ArrowUpRight className="w-3 h-3" />
