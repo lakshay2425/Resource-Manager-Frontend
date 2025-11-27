@@ -103,7 +103,13 @@ export default function ResourceCreationForm() {
       newErrors.link = 'Please enter a valid URL';
     }
 
+    if (formData.tags.length < 1) {
+      newErrors.tags = 'At least one tag is required';
+    }
+
     setErrors(newErrors);
+    console.log(newErrors);
+    console.log(Object.keys(newErrors).length === 0);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -120,6 +126,7 @@ export default function ResourceCreationForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
+      toast.error("Please enter valid information before submitting.");
       return;
     }
     try {
@@ -295,7 +302,7 @@ export default function ResourceCreationForm() {
 
                 {/* Current Tags */}
                 {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
+                  <div className="flex flex-wrap gap-2 mb-3 sm:mb-4 ">
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
@@ -313,11 +320,13 @@ export default function ResourceCreationForm() {
                     ))}
                   </div>
                 )}
+                
 
                 {/* Add New Tag */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mb-3 sm:mb-4">
                   <input
                     type="text"
+                    className={`w-full px-4 py-3 sm:px-6 sm:py-4 border-2 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all bg-white/50 backdrop-blur-sm text-base sm:text-lg resize-none ${errors.tags  ? 'border-red-500' : 'border-gray-200'}`}
                     value={currentTag}
                     onChange={(e) => setCurrentTag(e.target.value)}
                     onKeyPress={(e) => {
@@ -327,7 +336,6 @@ export default function ResourceCreationForm() {
                       }
                     }}
                     placeholder="Add a tag..."
-                    className="flex-1 px-3 py-2 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-white/50 backdrop-blur-sm text-sm sm:text-base"
                   />
                   <button
                     type="button"
@@ -337,6 +345,14 @@ export default function ResourceCreationForm() {
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 mx-auto sm:mx-0" />
                   </button>
                 </div>
+
+                    {/* Error Message - Now below the input */}
+                {errors.tags && formData.tags.length === 0 && (
+                  <div className='flex items-center space-x-2 text-red-500 mb-3 sm:mb-4'>
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{errors.tags}</span>
+                  </div>
+                )}
 
                 {/* Predefined Tags */}
                 <div className="space-y-2 sm:space-y-3">
