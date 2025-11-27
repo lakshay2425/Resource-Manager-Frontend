@@ -1,6 +1,6 @@
 // import LoadingBar from "../components/LoadingBar.jsx";
 import { useState, useEffect, useMemo, useContext } from 'react';
-import { Search,BookmarkPlus,Globe,X,Bookmark,ArrowUpRight, Edit3, Trash2,Grid,List,Lock,Plus,} from 'lucide-react';
+import { Search,BookmarkPlus,Globe,X,Bookmark,ArrowUpRight, Edit3, AlertTriangle, Trash2,Grid,List,Lock,Plus,} from 'lucide-react';
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
@@ -133,7 +133,7 @@ export default function AllResourcesPage() {
 
   const stats = getStats();
 
-  const ResourceCard = ({ resource, isListView = false , onBookmarkChange , setResources }) => {
+  const ResourceCard = ({ resource, isListView = false , onBookmarkChange  }) => {
       const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -250,7 +250,10 @@ export default function AllResourcesPage() {
                   <Edit3 className="w-4 h-4 transform group-hover/edit:scale-110 transition-transform duration-200" />
                 </button>
                 <button
-                  onClick={() => handleDeleteResource(resource, setResources, resourceToDelete, setIsDeleting, showDeleteModal, setResourceToDelete)}
+                  onClick={() => {
+                    setShowDeleteModal(true);
+                    setResourceToDelete(resource);
+                  }}
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                   title="Delete Resource"
                 >
@@ -564,7 +567,7 @@ export default function AllResourcesPage() {
               
               {/* Confirm Delete Button */}
               <button
-                onClick={handleDeleteResource}
+                onClick={()=> handleDeleteResource(setResources, resourceToDelete, setIsDeleting,setShowDeleteModal,setResourceToDelete)}
                 disabled={isDeleting}
                 className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:shadow-lg hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
@@ -585,7 +588,6 @@ export default function AllResourcesPage() {
         </div>
       )}
 
-      {/* )} */}
     </>
   );
 }
