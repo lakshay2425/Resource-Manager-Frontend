@@ -5,7 +5,7 @@ export const handleDeleteResource = async (setResources, resourceToDelete, setIs
 
   try {
     setIsDeleting(true);
-    await axiosInstance.delete(`/resources?id=${resourceToDelete._id}`);
+    await axiosInstance.delete(`/resources/${resourceToDelete._id}`);
     setResources(prevResources => prevResources.filter(resource => resource._id !== resourceToDelete._id));
     toast.success('Resource deleted successfully');
     setShowDeleteModal(false);
