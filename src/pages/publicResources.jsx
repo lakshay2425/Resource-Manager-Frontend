@@ -2,7 +2,7 @@ import { getInitials } from "../utilis/getInitials.js";
 import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, useContext, } from 'react';
-import { Search,Globe,X,Grid,List, Bookmark} from 'lucide-react';
+import { Search,Globe,X,Grid,List, Bookmark, ChevronUp, ChevronDown} from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { handleBookmark } from "../utilis/handleBookmark.js";
