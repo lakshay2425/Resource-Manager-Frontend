@@ -1,6 +1,6 @@
 // import LoadingBar from "../components/LoadingBar.jsx";
 import { useState, useEffect, useMemo, useContext } from 'react';
-import { Search,BookmarkPlus,Globe,X,Bookmark,ArrowUpRight, Edit3, AlertTriangle, Trash2,Grid,List,Lock,Plus,} from 'lucide-react';
+import { Search, BookmarkPlus, Globe, X, Bookmark, ArrowUpRight, Edit3, AlertTriangle, Trash2, Grid, List, Lock, Plus, } from 'lucide-react';
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ export default function AllResourcesPage() {
   const [activeTab, setActiveTab] = useState('all'); // all, private, public
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
+  const [bookMarkedResourcesId, setBookMarkedResourcesId] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { gmail } = useContext(AuthContext);
 
@@ -49,6 +50,23 @@ export default function AllResourcesPage() {
     fetchData();
   }, [gmail, setIsLoading]);
 
+
+  useEffect(() => {
+    const getBookMarkedResourcesId = async () => {
+      try {
+        const response = await axiosInstance.get(`/bookmarks/ids`)
+        console.log(response.data, "Response data");
+        const bookMakredResourceId = response.data.bookMarkedResouces.map(item => item.resourceId);
+        setBookMarkedResourcesId(bookMakredResourceId || []);
+      } catch (error) {
+        console.error('Error fetching bookmarked resources IDs:', error);
+      }
+    }
+
+    getBookMarkedResourcesId();
+  }, []);
+
+
   // Handle bookmark change
   const handleBookmarkChange = (resourceId, isBookmarked) => {
     // Update local state
@@ -59,7 +77,7 @@ export default function AllResourcesPage() {
     );
   };
 
-  
+
   // Open delete confirmation modal
   const openDeleteModal = (resource) => {
     setResourceToDelete(resource);
@@ -133,37 +151,34 @@ export default function AllResourcesPage() {
 
   const stats = getStats();
 
-  const ResourceCard = ({ resource, isListView = false , onBookmarkChange  }) => {
-      const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const ResourceCard = ({ resource, isListView = false, onBookmarkChange, bookMarkedResourcesId }) => {
+    const navigate = useNavigate();
+    const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
 
     return (
-      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${
-        isListView 
-          ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6' 
+      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${isListView
+          ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
           : 'p-4 sm:p-6'
-      }`}>
+        }`}>
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2">
-                  {/* Bookmark Button - Instagram Style */}
-        <button
-          onClick={()=> handleBookmark(resource._id, setIsAnimating, setIsBookmarked, isBookmarked, onBookmarkChange)}
-          className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
-            isBookmarked 
-              ? 'bg-purple-50 text-purple-600' 
-              : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
-          }`}
-          title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
-        >
-          <Bookmark
-            className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
-              isAnimating ? 'scale-125' : 'scale-100'
-            }`}
-            fill={isBookmarked ? 'currentColor' : 'none'}
-            strokeWidth={2}
-          />
-        </button>
+          {/* Bookmark Button - Instagram Style */}
+          <button
+            onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, isBookmarked, onBookmarkChange)}
+            className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${isBookmarked
+                ? 'bg-purple-50 text-purple-600'
+                : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
+              }`}
+            title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
+          >
+            <Bookmark
+              className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'
+                }`}
+              fill={isBookmarked ? 'currentColor' : 'none'}
+              strokeWidth={2}
+            />
+          </button>
           {resource.status === 'private' ? (
             <div className="flex items-center space-x-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 rounded-full text-xs">
               <Lock className="w-3 h-3" />
@@ -179,11 +194,10 @@ export default function AllResourcesPage() {
 
         {/* Resource Content */}
         <div className={`${isListView ? 'flex-1' : ''} ${isListView ? 'pt-6 sm:pt-0' : 'pt-8 sm:pt-6'}`}>
-          <div className={`flex ${
-            isListView 
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0' 
+          <div className={`flex ${isListView
+              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
               : 'items-start justify-between mb-3 sm:mb-4'
-          }`}>
+            }`}>
             <div className={`${isListView ? 'flex-1 sm:pr-4' : ''}`}>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
                 <span className={`px-2 py-1 sm:px-3 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resource.tags[0])}`}>
@@ -199,9 +213,8 @@ export default function AllResourcesPage() {
               <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors leading-tight">
                 {resource.name}
               </h3>
-              <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${
-                isListView ? '' : 'mb-3 sm:mb-4'
-              }`}>
+              <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${isListView ? '' : 'mb-3 sm:mb-4'
+                }`}>
                 {resource.description}
               </p>
             </div>
@@ -221,11 +234,10 @@ export default function AllResourcesPage() {
           </div>
 
           {/* User and Stats */}
-          <div className={`flex ${
-            isListView 
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4' 
+          <div className={`flex ${isListView
+              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
               : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
-          }`}>
+            }`}>
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
@@ -276,7 +288,7 @@ export default function AllResourcesPage() {
     );
   };
 
-   // Loading State
+  // Loading State
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
@@ -295,11 +307,7 @@ export default function AllResourcesPage() {
   }
   return (
     <>
-      {/* {isLoading === true ? (
-        <LoadingBar message={"Loading Your Resources..."} />
-      ) : ( */}
-
-<div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-md border-b border-white/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -333,8 +341,8 @@ export default function AllResourcesPage() {
               <button
                 onClick={() => setActiveTab('all')}
                 className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'all'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 All Resources ({stats.totalCount})
@@ -342,8 +350,8 @@ export default function AllResourcesPage() {
               <button
                 onClick={() => setActiveTab('private')}
                 className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'private'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 Private ({stats.privateCount})
@@ -351,8 +359,8 @@ export default function AllResourcesPage() {
               <button
                 onClick={() => setActiveTab('public')}
                 className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'public'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 Public ({stats.publicCount})
@@ -464,6 +472,7 @@ export default function AllResourcesPage() {
                 <ResourceCard
                   key={resource._id}
                   resource={resource}
+                  bookMarkedResourcesId={bookMarkedResourcesId}
                   isListView={viewMode === 'list'}
                   onBookmarkChange={handleBookmarkChange}
                   onDeleteClick={openDeleteModal}
@@ -513,12 +522,12 @@ export default function AllResourcesPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && resourceToDelete && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={closeDeleteModal}
         >
           {/* Modal Content */}
-          <div 
+          <div
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
@@ -528,12 +537,12 @@ export default function AllResourcesPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mb-4">
                 <AlertTriangle className="w-8 h-8 text-red-600" />
               </div>
-              
+
               {/* Modal Title */}
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 Delete Resource?
               </h3>
-              
+
               {/* Modal Description */}
               <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
                 Are you sure you want to permanently delete <span className="font-semibold text-gray-900">"{resourceToDelete.name}"</span>? This action cannot be undone and will remove the resource from your collection.
@@ -564,10 +573,10 @@ export default function AllResourcesPage() {
               >
                 Cancel
               </button>
-              
+
               {/* Confirm Delete Button */}
               <button
-                onClick={()=> handleDeleteResource(setResources, resourceToDelete, setIsDeleting,setShowDeleteModal,setResourceToDelete)}
+                onClick={() => handleDeleteResource(setResources, resourceToDelete, setIsDeleting, setShowDeleteModal, setResourceToDelete)}
                 disabled={isDeleting}
                 className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:shadow-lg hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
