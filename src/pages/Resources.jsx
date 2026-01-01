@@ -55,7 +55,6 @@ export default function AllResourcesPage() {
     const getBookMarkedResourcesId = async () => {
       try {
         const response = await axiosInstance.get(`/bookmarks/ids`)
-        console.log(response.data, "Response data");
         const bookMakredResourceId = response.data.bookMarkedResouces.map(item => item.resourceId);
         setBookMarkedResourcesId(bookMakredResourceId || []);
       } catch (error) {

@@ -2,7 +2,7 @@ import { getInitials } from "../utilis/getInitials.js";
 import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, useContext, } from 'react';
-import { Search,Globe,X,Grid,List, Bookmark, ChevronUp, ChevronDown} from 'lucide-react';
+import { Search, Globe, X, Grid, List, Bookmark, ChevronUp, ChevronDown } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { handleBookmark } from "../utilis/handleBookmark.js";
@@ -16,7 +16,9 @@ export default function PublicResourcesPage() {
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true)
-  const {isAuthenticated} = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
+  const [bookMarkedResourcesId, setBookMarkedResourcesId] = useState([]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +41,7 @@ export default function PublicResourcesPage() {
   // Get unique categories from resources
   const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
 
-   // Handle bookmark change - update the local state when bookmark status changes
+  // Handle bookmark change - update the local state when bookmark status changes
   const handleBookmarkChange = (resourceId, isBookmarked) => {
     setResources(prev =>
       prev.map(r =>
@@ -52,6 +54,20 @@ export default function PublicResourcesPage() {
       )
     );
   };
+
+  useEffect(() => {
+    const getBookMarkedResourcesId = async () => {
+      try {
+        const response = await axiosInstance.get(`/bookmarks/ids`)
+        const bookMakredResourceId = response.data.bookMarkedResouces.map(item => item.resourceId);
+        setBookMarkedResourcesId(bookMakredResourceId || []);
+      } catch (error) {
+        console.error('Error fetching bookmarked resources IDs:', error);
+      }
+    }
+
+    if (isAuthenticated) getBookMarkedResourcesId();
+  }, [isAuthenticated]);
 
   // Filter and sort resources
   useEffect(() => {
@@ -82,9 +98,9 @@ export default function PublicResourcesPage() {
     setFilteredResources(filtered);
   }, [resources, searchTerm, selectedCategory, sortBy]);
 
-const ResourceCard = ({ resource, isListView = false }) => {
+  const ResourceCard = ({ resource, isListView = false, bookMarkedResourcesId }) => {
     const [showAllTags, setShowAllTags] = useState(false);
-    const [isBookmarked, setIsBookmarked] = useState(resource.isBookmarked || false);
+    const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
     const [isAnimating, setIsAnimating] = useState(false);
 
 
@@ -94,26 +110,24 @@ const ResourceCard = ({ resource, isListView = false }) => {
 
     return (
       <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${isListView
-          ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
-          : 'p-4 sm:p-6'
+        ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
+        : 'p-4 sm:p-6'
         }`}>
-        
+
         {/* Bookmark Button - Only visible when authenticated */}
         {isAuthenticated && (
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
             <button
-              onClick={()=> handleBookmark(resource._id, setIsAnimating,setIsBookmarked,isBookmarked,handleBookmarkChange)}
-              className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
-                isBookmarked 
-                  ? 'bg-purple-50 text-purple-600' 
-                  : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
-              }`}
+              onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, isBookmarked, handleBookmarkChange)}
+              className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${isBookmarked
+                ? 'bg-purple-50 text-purple-600'
+                : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
+                }`}
               title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
             >
               <Bookmark
-                className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
-                  isAnimating ? 'scale-125' : 'scale-100'
-                }`}
+                className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'
+                  }`}
                 fill={isBookmarked ? 'currentColor' : 'none'}
                 strokeWidth={2}
               />
@@ -123,8 +137,8 @@ const ResourceCard = ({ resource, isListView = false }) => {
 
         <div className={`${isListView ? 'flex-1' : ''} ${isAuthenticated ? 'pt-8 sm:pt-6' : ''}`}>
           <div className={`flex ${isListView
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
-              : 'items-start justify-between mb-3 sm:mb-4'
+            ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
+            : 'items-start justify-between mb-3 sm:mb-4'
             }`}>
             <div className={`${isListView ? 'flex-1' : ''}`}>
               <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
@@ -138,10 +152,10 @@ const ResourceCard = ({ resource, isListView = false }) => {
                   </span>
                 )}
               </div>
-              
+
               {/* Made title clickable with proper link */}
               <h3 className="text-lg sm:text-xl font-bold mb-2 leading-tight">
-                <a 
+                <a
                   href={resource.sourceLink}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -150,7 +164,7 @@ const ResourceCard = ({ resource, isListView = false }) => {
                   {resource.name}
                 </a>
               </h3>
-              
+
               <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${isListView ? '' : 'mb-3 sm:mb-4'
                 }`}>
                 {resource.description}
@@ -186,8 +200,8 @@ const ResourceCard = ({ resource, isListView = false }) => {
 
           {/* User and Stats */}
           <div className={`flex ${isListView
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
-              : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
+            ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
+            : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
             }`}>
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
@@ -346,6 +360,7 @@ const ResourceCard = ({ resource, isListView = false }) => {
               <ResourceCard
                 key={resource._id}
                 resource={resource}
+                bookMarkedResourcesId={bookMarkedResourcesId}
                 isListView={viewMode === 'list'}
               />
             ))}
