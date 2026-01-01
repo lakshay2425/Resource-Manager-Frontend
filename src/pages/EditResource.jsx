@@ -9,6 +9,7 @@ import {
   Lock,
   Link,
   Hash,
+  AlertTriangle,
   Type,
   X,
   Plus,
