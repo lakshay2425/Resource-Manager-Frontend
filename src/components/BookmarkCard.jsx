@@ -17,7 +17,7 @@ const BookmarkCard = ({bookmark, onRemoveBookmark }) => {
       setIsRemoving(true);
       
       // Call your API to remove the bookmark
-      await axiosInstance.delete(`/bookmarks/${resource._id}`).then(()=> toast.success("Resources removed successfully")).catch((err)=>{
+      await axiosInstance.delete(`/bookmarks/${bookmark._id}`).then(()=> toast.success("Resources removed successfully")).catch((err)=>{
         console.error("Failed to remove resource from bookmark list");
         if(err.status === 403){
           toast.error("You're not authorized to perform this action")
