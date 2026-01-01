@@ -143,10 +143,29 @@ export default function EditResourcePage() {
     }
   };
 
+    // State for delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+
+    // Open delete confirmation modal
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteModal = () => {
+    if (!isDeleting) {
+      setShowDeleteModal(false);
+      setResourceToDelete(null);
+    }
+  };
+
   const handleDeleteResource = async (resourceId) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
-        const response = await axiosInstance.delete(`/resources?id=${resourceId}`);
+        setIsDeleting(true);
+        const response = await axiosInstance.delete(`/resources/${resourceId}`);
         if (response.status === 200) {
           toast.success("Resource deleted successfully");
           navigate("/resources"); // Navigate after deletion
@@ -156,8 +175,9 @@ export default function EditResourcePage() {
       } catch (error) {
         console.error('Error deleting resource:', error);
         toast.error('Error deleting resource.');
+      }finally {
+        setIsDeleting(false);
       }
-    }
   };
 
   const filteredSuggestions = tagSuggestions.filter(tag =>
@@ -167,6 +187,7 @@ export default function EditResourcePage() {
 
 
   return (
+    <>
     // Wrap your entire form with the form tag and onSubmit handler from RHF
     <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       {/* Animated Background Elements */}
@@ -413,7 +434,10 @@ export default function EditResourcePage() {
           <div className="flex items-center justify-between space-x-4">
             <button
               type="button" 
-              onClick={() => handleDeleteResource(id)}
+              onClick={() => {
+                openDeleteModal();
+                setResourceToDelete(initialResource);
+              }}
               className="flex items-center space-x-2 px-6 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 border border-red-200 hover:border-red-300"
             >
               <Trash2 className="w-4 h-4" />
@@ -487,5 +511,83 @@ export default function EditResourcePage() {
         }
       `}</style>
     </form>
+
+          {/* Delete Confirmation Modal */}
+      {showDeleteModal && resourceToDelete && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={closeDeleteModal}
+        >
+          {/* Modal Content */}
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header with Icon */}
+            <div className="flex flex-col items-center text-center mb-6">
+              {/* Warning Icon with gradient background */}
+              <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              
+              {/* Modal Title */}
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                Delete Resource?
+              </h3>
+              
+              {/* Modal Description */}
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Are you sure you want to permanently delete <span className="font-semibold text-gray-900">"{resourceToDelete.name}"</span>? This action cannot be undone and will remove the resource from your collection.
+              </p>
+            </div>
+
+            {/* Resource Info Preview - Optional but helpful context */}
+            <div className="bg-gray-50 rounded-lg p-3 mb-6">
+              <div className="flex items-start space-x-3">
+                <div className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resourceToDelete.tags?.[0] || 'general')}`}>
+                  <CategoryIcon category={resourceToDelete.tags?.[0] || 'general'} className="w-3 h-3" />
+                  <span>{resourceToDelete.tags?.[0] || 'Resource'}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{resourceToDelete.name}</p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              {/* Cancel Button */}
+              <button
+                onClick={closeDeleteModal}
+                disabled={isDeleting}
+                className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              
+              {/* Confirm Delete Button */}
+              <button
+                onClick={()=> handleDeleteResource(resourceToDelete._id)}
+                disabled={isDeleting}
+                className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:shadow-lg hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isDeleting ? (
+                  <span className="flex items-center justify-center space-x-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Deleting...</span>
+                  </span>
+                ) : (
+                  'Delete Resource'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
