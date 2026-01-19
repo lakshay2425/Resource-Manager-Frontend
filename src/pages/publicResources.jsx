@@ -118,7 +118,7 @@ export default function PublicResourcesPage() {
         {isAuthenticated && (
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
             <button
-              onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, isBookmarked, handleBookmarkChange)}
+              onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, bookMarkedResourcesId.includes(resource._id), handleBookmarkChange)}
               className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${isBookmarked
                 ? 'bg-purple-50 text-purple-600'
                 : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'

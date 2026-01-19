@@ -162,7 +162,7 @@ export default function AllResourcesPage() {
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2">
           {/* Bookmark Button - Instagram Style */}
           <button
-            onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, isBookmarked, onBookmarkChange)}
+            onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, bookMarkedResourcesId.includes(resource._id), onBookmarkChange)}
             className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${isBookmarked
                 ? 'bg-purple-50 text-purple-600'
                 : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
