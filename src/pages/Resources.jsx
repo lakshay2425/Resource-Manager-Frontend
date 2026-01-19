@@ -36,9 +36,7 @@ export default function AllResourcesPage() {
     const fetchData = async () => {
       try {
         // setIsLoading(true);
-        const response = await axiosInstance.get(`/resources`, {
-          withCredentials: true
-        });
+        const response = await axiosInstance.get(`/resources`);
         setResources(response.data.data || []);
       } catch (error) {
         console.error('Error fetching resources:', error);
