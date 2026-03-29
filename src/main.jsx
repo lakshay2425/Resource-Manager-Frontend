@@ -7,6 +7,12 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx';
 import {LoadingProvider} from './context/LoadingContext.jsx'
+import posthog from 'posthog-js'
+
+posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
+  api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+  person_profiles: 'identified_only',
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
