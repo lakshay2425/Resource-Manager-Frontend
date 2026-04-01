@@ -1,17 +1,14 @@
-import { Globe } from "lucide-react"
+import { Loader2 } from 'lucide-react';
 
-
-const LoadingBar = ({message}) => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Globe className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-700">{message}</h3>
+const LoadingBar = ({ message = "Loading..." }) => {
+    return (
+        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+            <div className="text-center">
+                <Loader2 className="w-10 h-10 text-slate-700 animate-spin mx-auto mb-4" />
+                <p className="text-stone-600 text-sm">{message}</p>
+            </div>
         </div>
-      </div>
-  )
-}
+    );
+};
 
-export default LoadingBar
+export default LoadingBar;

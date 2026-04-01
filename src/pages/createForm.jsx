@@ -6,19 +6,18 @@ import {
   Lock,
   Globe,
   Shield,
-  Save,
   X,
   Plus,
   Sparkles,
   Eye,
   Check,
   AlertCircle,
-  BookmarkPlus,
+  Layers,
   Tag,
   User,
   ArrowRight,
-  Zap,
-  Star,
+  Lightbulb,
+  Loader2
 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios"
 import { useNavigate } from 'react-router-dom';
@@ -108,8 +107,6 @@ export default function ResourceCreationForm() {
     }
 
     setErrors(newErrors);
-    console.log(newErrors);
-    console.log(Object.keys(newErrors).length === 0);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -170,21 +167,29 @@ export default function ResourceCreationForm() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center border border-white/20 backdrop-blur-sm">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 animate-pulse">
-              <Check className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-8 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Check className="w-8 h-8 text-slate-700" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Resource Created Successfully! 🎉</h3>
-            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Your resource has been saved and is now available in your collection.</p>
-            <div className="flex flex-col space-y-3">
-              <button onClick={() => navigate("/resources")} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base">
-                View My Resources
+            <h3 className="text-2xl font-bold text-stone-900 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
+              Resource Created
+            </h3>
+            <p className="text-stone-600 mb-6">
+              Your resource has been saved and is now available in your collection.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => navigate("/resources")}
+                className="btn-primary w-full"
+              >
+                <span>View My Resources</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setSubmitSuccess(false)}
-                className="text-purple-600 hover:text-purple-700 font-medium text-sm sm:text-base"
+                className="text-slate-700 hover:text-slate-800 font-medium text-sm"
               >
                 Create Another Resource
               </button>
@@ -196,40 +201,40 @@ export default function ResourceCreationForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 py-6 sm:py-8 lg:py-12 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-stone-50 py-8 lg:py-12 px-4">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-            <BookmarkPlus className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+        <div className="text-center mb-10">
+          <div className="w-14 h-14 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-5 shadow-md">
+            <Layers className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4">
-            Create New Resource
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
+            Add New Resource
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4 sm:px-0">
-            Share something amazing with the community or keep it private for your personal collection
+          <p className="text-stone-600 max-w-lg mx-auto">
+            Save a valuable link to your collection or share it with the community
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Form */}
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl border border-white/30 p-6 sm:p-8">
+            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-6 sm:p-8">
               {/* Resource Name */}
-              <div className="mb-6 sm:mb-8">
-                <label className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
-                  <Type className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+              <div className="mb-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
+                  <Type className="w-4 h-4 text-slate-700" />
                   <span>Resource Name</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Give your resource an awesome name..."
-                  className={`w-full px-4 py-3 sm:px-6 sm:py-4 border-2 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all bg-white/50 backdrop-blur-sm text-base sm:text-lg ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                  placeholder="Give your resource a descriptive name"
+                  className={`input ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                 />
                 {errors.name && (
-                  <div className="flex items-center space-x-2 mt-2 text-red-500">
+                  <div className="flex items-center gap-2 mt-2 text-red-600">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-sm">{errors.name}</span>
                   </div>
@@ -237,9 +242,9 @@ export default function ResourceCreationForm() {
               </div>
 
               {/* Resource Link */}
-              <div className="mb-6 sm:mb-8">
-                <label className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
-                  <Link className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              <div className="mb-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
+                  <Link className="w-4 h-4 text-slate-700" />
                   <span>Resource Link</span>
                 </label>
                 <div className="relative">
@@ -249,17 +254,17 @@ export default function ResourceCreationForm() {
                     onBlur={generateLinkPreview}
                     value={formData.link}
                     onChange={(e) => handleInputChange('link', e.target.value)}
-                    placeholder="https://awesome-resource.com"
-                    className={`w-full px-4 py-3 sm:px-6 sm:py-4 border-2 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 backdrop-blur-sm text-base sm:text-lg pr-12 ${errors.link ? 'border-red-500' : 'border-gray-200'}`}
+                    placeholder="https://example.com/resource"
+                    className={`input pr-12 ${errors.link ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   />
                   {isValidUrl(formData.link) && (
-                    <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2">
-                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <Check className="w-5 h-5 text-slate-700" />
                     </div>
                   )}
                 </div>
                 {errors.link && (
-                  <div className="flex items-center space-x-2 mt-2 text-red-500">
+                  <div className="flex items-center gap-2 mt-2 text-red-600">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-sm">{errors.link}</span>
                   </div>
@@ -267,26 +272,26 @@ export default function ResourceCreationForm() {
               </div>
 
               {/* Description */}
-              <div className="mb-6 sm:mb-8">
-                <label className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+              <div className="mb-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
+                  <FileText className="w-4 h-4 text-slate-700" />
                   <span>Description</span>
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Describe what makes this resource special. What will people learn or gain from it?"
+                  placeholder="Describe what this resource is about and why it's useful"
                   rows="4"
-                  className={`w-full px-4 py-3 sm:px-6 sm:py-4 border-2 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all bg-white/50 backdrop-blur-sm text-base sm:text-lg resize-none ${errors.description ? 'border-red-500' : 'border-gray-200'}`}
+                  className={`input resize-none ${errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                 />
                 <div className="flex justify-between items-center mt-2">
                   {errors.description ? (
-                    <div className="flex items-center space-x-2 text-red-500">
+                    <div className="flex items-center gap-2 text-red-600">
                       <AlertCircle className="w-4 h-4" />
                       <span className="text-sm">{errors.description}</span>
                     </div>
                   ) : (
-                    <span className={`text-sm ${formData.description.length < 20 ? 'text-orange-500' : 'text-green-500'}`}>
+                    <span className={`text-sm ${formData.description.length < 20 ? 'text-amber-600' : 'text-slate-700'}`}>
                       {formData.description.length}/20+ characters
                     </span>
                   )}
@@ -294,39 +299,39 @@ export default function ResourceCreationForm() {
               </div>
 
               {/* Tags */}
-              <div className="mb-6 sm:mb-8">
-                <label className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
-                  <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+              <div className="mb-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
+                  <Tag className="w-4 h-4 text-slate-700" />
                   <span>Tags</span>
                 </label>
 
                 {/* Current Tags */}
                 {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3 sm:mb-4 ">
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center space-x-2 shadow-sm"
+                        className="inline-flex items-center gap-1.5 bg-amber-100 text-slate-800 px-3 py-1.5 rounded-lg text-sm font-medium"
                       >
                         <span>#{tag}</span>
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="hover:bg-white/20 rounded-full p-0.5 sm:p-1 transition-colors"
+                          className="hover:bg-amber-200 rounded-full p-0.5 transition-colors"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       </span>
                     ))}
                   </div>
                 )}
-                
+
 
                 {/* Add New Tag */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mb-3 sm:mb-4">
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
-                    className={`w-full px-4 py-3 sm:px-6 sm:py-4 border-2 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all bg-white/50 backdrop-blur-sm text-base sm:text-lg resize-none ${errors.tags  ? 'border-red-500' : 'border-gray-200'}`}
+                    className={`input flex-1 ${errors.tags ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                     value={currentTag}
                     onChange={(e) => setCurrentTag(e.target.value)}
                     onKeyPress={(e) => {
@@ -340,33 +345,33 @@ export default function ResourceCreationForm() {
                   <button
                     type="button"
                     onClick={() => addTag(currentTag)}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors"
                   >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mx-auto sm:mx-0" />
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
 
-                    {/* Error Message - Now below the input */}
+                {/* Error Message */}
                 {errors.tags && formData.tags.length === 0 && (
-                  <div className='flex items-center space-x-2 text-red-500 mb-3 sm:mb-4'>
+                  <div className='flex items-center gap-2 text-red-600 mb-3'>
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-sm">{errors.tags}</span>
                   </div>
                 )}
 
                 {/* Predefined Tags */}
-                <div className="space-y-2 sm:space-y-3">
-                  <p className="text-xs sm:text-sm text-gray-600 flex items-center space-x-2">
-                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                <div className="space-y-2">
+                  <p className="text-sm text-stone-500 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
                     <span>Quick add popular tags:</span>
                   </p>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {predefinedTags.filter(tag => !formData.tags.includes(tag)).slice(0, 10).map((tag, index) => (
                       <button
                         key={index}
                         type="button"
                         onClick={() => addTag(tag)}
-                        className="bg-gray-100 hover:bg-purple-100 text-gray-700 hover:text-purple-700 px-2 py-1 sm:px-3 sm:py-1 rounded-md sm:rounded-lg text-xs sm:text-sm transition-colors border border-gray-200 hover:border-purple-300"
+                        className="px-3 py-1.5 bg-stone-100 hover:bg-amber-50 text-stone-600 hover:text-slate-800 rounded-lg text-sm transition-colors border border-stone-200 hover:border-amber-200"
                       >
                         #{tag}
                       </button>
@@ -376,36 +381,36 @@ export default function ResourceCreationForm() {
               </div>
 
               {/* Privacy Status */}
-              <div className="mb-6 sm:mb-8">
-                <label className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
-                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500" />
-                  <span>Privacy Setting</span>
+              <div className="mb-8">
+                <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-3">
+                  <Shield className="w-4 h-4 text-slate-700" />
+                  <span>Visibility</span>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => handleInputChange('status', 'private')}
-                    className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 transition-all transform hover:scale-105 ${formData.status === 'private'
-                      ? 'border-purple-500 bg-purple-50 shadow-lg'
-                      : 'border-gray-200 bg-white/50 hover:border-purple-300'
+                    className={`p-5 rounded-xl border-2 transition-all ${formData.status === 'private'
+                      ? 'border-slate-600 bg-amber-50'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
                       }`}
                   >
-                    <Lock className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 ${formData.status === 'private' ? 'text-purple-500' : 'text-gray-400'}`} />
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-1 sm:mb-2">Private</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Only you can see this resource</p>
+                    <Lock className={`w-6 h-6 mx-auto mb-2 ${formData.status === 'private' ? 'text-slate-700' : 'text-stone-400'}`} />
+                    <h3 className={`text-sm font-semibold mb-1 ${formData.status === 'private' ? 'text-slate-800' : 'text-stone-700'}`}>Private</h3>
+                    <p className="text-xs text-stone-500">Only you can see this</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleInputChange('status', 'public')}
-                    className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 transition-all transform hover:scale-105 ${formData.status === 'public'
-                      ? 'border-green-500 bg-green-50 shadow-lg'
-                      : 'border-gray-200 bg-white/50 hover:border-green-300'
+                    className={`p-5 rounded-xl border-2 transition-all ${formData.status === 'public'
+                      ? 'border-slate-600 bg-amber-50'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
                       }`}
                   >
-                    <Globe className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 ${formData.status === 'public' ? 'text-green-500' : 'text-gray-400'}`} />
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-1 sm:mb-2">Public</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Everyone can discover this resource</p>
+                    <Globe className={`w-6 h-6 mx-auto mb-2 ${formData.status === 'public' ? 'text-slate-700' : 'text-stone-400'}`} />
+                    <h3 className={`text-sm font-semibold mb-1 ${formData.status === 'public' ? 'text-slate-800' : 'text-stone-700'}`}>Public</h3>
+                    <p className="text-xs text-stone-500">Visible to everyone</p>
                   </button>
                 </div>
               </div>
@@ -415,21 +420,17 @@ export default function ResourceCreationForm() {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-semibold transition-all duration-300 transform ${isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:shadow-2xl hover:scale-105 text-white'
-                  }`}
+                className="w-full btn-primary py-4 text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Creating Resource...</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center space-x-2">
-                    <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="flex items-center justify-center gap-2">
                     <span>Create Resource</span>
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <ArrowRight className="w-5 h-5" />
                   </div>
                 )}
               </button>
@@ -438,59 +439,61 @@ export default function ResourceCreationForm() {
 
           {/* Live Preview Sidebar */}
           <div className="lg:col-span-1 order-1 lg:order-2">
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl border border-white/30 p-4 sm:p-6 lg:sticky lg:top-8">
-              <div className="flex items-center space-x-2 mb-4 sm:mb-6">
-                <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
-                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Live Preview</h3>
+            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-6 lg:sticky lg:top-24">
+              <div className="flex items-center gap-2 mb-5">
+                <Eye className="w-5 h-5 text-slate-700" />
+                <h3 className="text-base font-semibold text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>Live Preview</h3>
               </div>
 
               {/* Resource Preview Card */}
-              <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="flex items-center justify-between mb-2 sm:mb-3">
-                  <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium border ${formData.status === 'public'
-                    ? 'bg-green-100 text-green-700 border-green-200'
-                    : 'bg-purple-100 text-purple-700 border-purple-200'
-                    }`}>
-                    {formData.status === 'public' ? 'Public' : 'Private'}
+              <div className="bg-stone-50 rounded-xl border border-stone-200 p-5 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`tag ${formData.status === 'public' ? 'bg-amber-100 text-slate-800' : 'bg-stone-200 text-stone-600'}`}>
+                    {formData.status === 'public' ? (
+                      <>
+                        <Globe className="w-3 h-3" />
+                        <span>Public</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-3 h-3" />
+                        <span>Private</span>
+                      </>
+                    )}
                   </span>
-                  {formData.status === 'public' ? (
-                    <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
-                  ) : (
-                    <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
-                  )}
                 </div>
 
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
-                  {formData.name || 'Your awesome resource name'}
+                <h3 className="text-base font-semibold text-stone-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                  {formData.name || 'Your resource name'}
                 </h3>
 
-                <p className="text-gray-600 text-sm leading-relaxed mb-3 sm:mb-4">
+                <p className="text-stone-600 text-sm leading-relaxed mb-4">
                   {formData.description || 'Your resource description will appear here...'}
                 </p>
 
                 {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                  <div className="flex flex-wrap gap-1.5 mb-4">
                     {formData.tags.slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-gray-50 text-gray-600 px-2 py-1 rounded-md sm:rounded-lg text-xs"
+                        className="bg-stone-200 text-stone-600 px-2 py-1 rounded-md text-xs"
                       >
                         #{tag}
                       </span>
                     ))}
                     {formData.tags.length > 3 && (
-                      <span className="text-gray-400 text-xs">+{formData.tags.length - 3} more</span>
+                      <span className="text-stone-400 text-xs py-1">+{formData.tags.length - 3} more</span>
                     )}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-50">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
-                      <User className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                <div className="flex items-center justify-between pt-4 border-t border-stone-200">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center">
+                      <User className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600">
-                      {formData.userEmail ? formData.userEmail.split('@')[0] : 'Your username'}
+                    <span className="text-xs text-stone-500">
+                      {formData.userEmail ? formData.userEmail.split('@')[0] : 'You'}
                     </span>
                   </div>
 
@@ -499,7 +502,7 @@ export default function ResourceCreationForm() {
                       href={formData.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 rounded-full text-xs hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                      className="px-3 py-1.5 bg-slate-700 text-white rounded-md text-xs font-medium hover:bg-slate-800 transition-colors"
                     >
                       Visit
                     </a>
@@ -508,23 +511,23 @@ export default function ResourceCreationForm() {
               </div>
 
               {/* Tips */}
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white">
-                <div className="flex items-center space-x-2 mb-2 sm:mb-3">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <h4 className="text-sm sm:text-base font-semibold">Pro Tips</h4>
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="w-4 h-4 text-slate-700" />
+                  <h4 className="text-sm font-semibold text-amber-800">Tips</h4>
                 </div>
-                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-white/90">
-                  <li className="flex items-start space-x-2">
-                    <Star className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <span>Use descriptive names to make resources easy to find</span>
+                <ul className="space-y-2.5 text-sm text-slate-800">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-slate-600 rounded-full mt-1.5 flex-shrink-0" />
+                    <span>Use descriptive names for easy searching</span>
                   </li>
-                  <li className="flex items-start space-x-2">
-                    <Star className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <span>Add relevant tags to help others discover your resources</span>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-slate-600 rounded-full mt-1.5 flex-shrink-0" />
+                    <span>Add relevant tags to help categorize</span>
                   </li>
-                  <li className="flex items-start space-x-2">
-                    <Star className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <span>Public resources help build the community knowledge base</span>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-slate-600 rounded-full mt-1.5 flex-shrink-0" />
+                    <span>Public resources help the community</span>
                   </li>
                 </ul>
               </div>
