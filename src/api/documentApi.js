@@ -2,13 +2,13 @@ import axios from 'axios';
 import axiosInstance from '../utilis/Axios.jsx';
 
 export const fetchDocuments = async () => {
-  const response = await axiosInstance.get('/api/document/');
+  const response = await axiosInstance.get('/document/');
   return response.data;
 };
 
 export const requestUploadPolicy = async (fileData) => {
   // fileData: { original_filename, mime_type, file_size }
-  const response = await axiosInstance.post('/api/document/upload-url', fileData);
+  const response = await axiosInstance.post('/document/upload-url', fileData);
   return response.data;
 };
 
@@ -39,16 +39,16 @@ export const uploadToMinio = async ({ postURL, formData, file, mimeType }) => {
 };
 
 export const fetchViewUrl = async (id) => {
-  const response = await axiosInstance.get(`/api/document/${id}/view`);
+  const response = await axiosInstance.get(`/document/${id}/view`);
   return response.data;
 };
 
 export const deleteDocument = async (id) => {
-  const response = await axiosInstance.delete(`/api/document/${id}`);
+  const response = await axiosInstance.delete(`/document/${id}`);
   return response.data;
 };
 
 export const deleteAllDocuments = async () => {
-  const response = await axiosInstance.delete('/api/document/all');
+  const response = await axiosInstance.delete('/document/all');
   return response.data;
 };

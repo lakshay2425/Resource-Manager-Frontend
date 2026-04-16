@@ -15,8 +15,8 @@ export const useGetDocuments = () => {
   return useQuery({
     queryKey: [DOC_HOOK_KEY],
     queryFn: async () => {
-      const response = await fetchDocuments();
-      return response.data || { documents: [], total: 0 };
+      const data = await fetchDocuments();
+      return data || { documents: [], total: 0 };
     }
   });
 };
@@ -28,13 +28,13 @@ export const useUploadDocument = () => {
   return useMutation({
     mutationFn: async (file) => {
       // Step 1: Request Pre-signed POST Policy
-      const policyResponse = await requestUploadPolicy({
+      const policyData = await requestUploadPolicy({
         original_filename: file.name,
         mime_type: file.type,
         file_size: file.size
       });
       
-      const { uploadData } = policyResponse.data;
+      const { uploadData } = policyData;
 
       // Step 2: Direct upload to MinIO S3 URL
       await uploadToMinio({
@@ -44,7 +44,7 @@ export const useUploadDocument = () => {
         mimeType: file.type
       });
 
-      return policyResponse.data;
+      return policyData;
     },
     onSuccess: () => {
       // Refresh documents
@@ -57,8 +57,8 @@ export const useUploadDocument = () => {
 export const useViewDocument = () => {
   return useMutation({
     mutationFn: async (id) => {
-      const response = await fetchViewUrl(id);
-      return response.data.url;
+      const data = await fetchViewUrl(id);
+      return data.url;
     },
     onSuccess: (url) => {
       window.open(url, '_blank', 'noopener,noreferrer');
