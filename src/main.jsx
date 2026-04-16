@@ -7,12 +7,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx';
 import {LoadingProvider} from './context/LoadingContext.jsx'
-import posthog from 'posthog-js'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
-  api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-  person_profiles: 'identified_only',
-})
+const queryClient = new QueryClient()
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -21,7 +19,9 @@ createRoot(document.getElementById('root')).render(
     <LoadingProvider>
     <AuthProvider>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <QueryClientProvider client={queryClient}>
     <App />
+    </QueryClientProvider>
     </GoogleOAuthProvider>    
     </AuthProvider>
     </LoadingProvider>
