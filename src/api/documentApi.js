@@ -46,6 +46,6 @@ export const deleteDocument = async (id) => {
 };
 
 export const deleteAllDocuments = async () => {
-  const response = await axiosInstance.delete('/document/all');
+  const response = await axiosInstance.delete('/document');
   return response.data;
 };
