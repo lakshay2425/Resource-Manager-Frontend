@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { BookmarkPlus, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle } from 'lucide-react';
+import { Layers, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle, ExternalLink } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useGoogleAuth } from "../hooks/useGoogleOAuth.js";
@@ -12,17 +12,28 @@ import profileImage from "./profileImagePlaceholder.png"
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const profileRef = useRef(null);
   const [user, setUser] = useLocalStorageState("userInfo", null);
   const { setIsAuthenticated, isAuthenticated, setGmail, gmail } = useContext(AuthContext);
   const { handleGoogleLogin } = useGoogleAuth();
   const navigateToSection = useSectionNavigation();
+  const location = useLocation();
 
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -35,6 +46,11 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
 
   const handleLogout = async () => {
     const response = await axios.post(`${authService}/users/logout`, null, {
@@ -50,108 +66,115 @@ const Navbar = () => {
     }
   };
 
-  // Updated navigation links array with the new Bookmarks and Create Resource links
-  // The order here determines the order they appear in your navbar
   const navigationLinks = [
-    { 
-      href: '/publicResources', 
-      label: 'Public Resources', 
+    {
+      href: '/publicResources',
+      label: 'Explore',
       icon: Home,
-      description: 'Browse all public resources' // Optional: useful for accessibility
+      description: 'Browse public resources'
     },
-    { 
-      href: '/resources', 
-      label: 'My Resources', 
-      icon: BookmarkPlus,
+    {
+      href: '/resources',
+      label: 'My Resources',
+      icon: Layers,
       description: 'View and manage your resources'
     },
-    { 
-      href: '/bookmarks', 
-      label: 'Bookmarks', 
+    {
+      href: '/bookmarks',
+      label: 'Saved',
       icon: Bookmark,
       description: 'View your saved bookmarks'
     },
-    { 
-      href: '/createResource', 
-      label: 'Create Resource', 
-      icon: PlusCircle,
-      description: 'Add a new resource',
-      highlight: true // Optional: we can use this to style it differently if needed
-    },
   ];
 
+  const isActivePath = (path) => location.pathname === path;
+
   return (
-    <nav className="bg-white/85 backdrop-blur-xl border-b border-white/30 sticky top-0 z-50 shadow-lg shadow-purple-500/5">
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+      ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-stone-200/50'
+      : 'bg-transparent'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center h-16 lg:h-18">
+
           {/* Logo */}
-          <div onClick={() => navigate("/")} className="flex items-center space-x-3 cursor-pointer">
-            <div className="relative w-12 h-12 bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 hover:scale-105">
-              <BookmarkPlus className="w-7 h-7 text-white" />
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl"></div>
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 group"
+          >
+            <div className="relative w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+              <Layers className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 bg-clip-text text-transparent">
+            <span className="text-xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-display)' }}>
               ResourceHub
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center gap-1">
             {isAuthenticated ? (
               <>
-                {/* Navigation Links - Now includes all 4 links */}
+                {/* Navigation Links */}
                 {navigationLinks.map((link) => {
                   const IconComponent = link.icon;
+                  const isActive = isActivePath(link.href);
                   return (
                     <Link
                       key={link.href}
                       to={link.href}
-                      // Added conditional styling for the "Create Resource" button to make it stand out
-                      className={`flex items-center space-x-2 transition-all duration-200 px-3 py-2 rounded-lg group ${
-                        link.highlight 
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105' 
-                          : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50/50'
-                      }`}
-                      title={link.description} // Adds tooltip on hover for better UX
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                        ? 'bg-amber-50 text-slate-800'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                        }`}
+                      title={link.description}
                     >
-                      <IconComponent className={`w-4 h-4 group-hover:scale-110 transition-transform duration-200 ${link.highlight ? 'text-white' : ''}`} />
-                      <span className="font-medium">{link.label}</span>
+                      <IconComponent className="w-4 h-4" />
+                      <span>{link.label}</span>
                     </Link>
                   );
                 })}
-                
+
+                {/* Create Resource Button */}
+                <Link
+                  to="/createResource"
+                  className="flex items-center gap-2 px-4 py-2 ml-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Add Resource</span>
+                </Link>
+
                 {/* Profile Dropdown */}
-                <div className="relative" ref={profileRef}>
+                <div className="relative ml-3" ref={profileRef}>
                   <button
                     onClick={toggleProfile}
-                    className="flex items-center space-x-2 p-2 rounded-xl hover:bg-purple-50/50 transition-all duration-200 group border border-transparent hover:border-purple-200/50"
+                    className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-stone-100 transition-all duration-200"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md overflow-hidden">
-                      {/* Fixed: Now properly displays user profile image or placeholder */}
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 ring-2 ring-white shadow-sm">
                       {user?.profilePic ? (
                         <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-4 h-4 text-white" />
+                        <div className="w-full h-full flex items-center justify-center bg-amber-100">
+                          <User className="w-4 h-4 text-slate-700" />
+                        </div>
                       )}
                     </div>
-                    <span className="font-medium text-gray-700 group-hover:text-purple-600">{user?.name || "Guest"}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Profile Dropdown Menu */}
                   {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-500/10 border border-white/30 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
-                      <div className="px-4 py-3 border-b border-gray-100/50">
-                        <p className="text-sm font-medium text-gray-700">{user?.username || "Guest"}</p>
-                        <p className="text-xs text-gray-500">{gmail}</p>
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1 animate-scale-in origin-top-right">
+                      <div className="px-4 py-3 border-b border-stone-100">
+                        <p className="text-sm font-medium text-stone-900">{user?.name || "Guest"}</p>
+                        <p className="text-xs text-stone-500 truncate">{gmail}</p>
                       </div>
-                      <div className="border-t border-gray-100/50 pt-2">
+                      <div className="py-1">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50/50 transition-all duration-200 w-full text-left group"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
                         >
-                          <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                          <span>Logout</span>
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign out</span>
                         </button>
                       </div>
                     </div>
@@ -161,13 +184,30 @@ const Navbar = () => {
             ) : (
               /* Logged Out State */
               <>
-                <button onClick={() => navigateToSection("features")} className="text-gray-700 hover:text-purple-600 transition-colors font-medium">Features</button>
-                <button onClick={() => navigateToSection("why-us")} className="text-gray-700 hover:text-purple-600 transition-colors font-medium">Why ResourceHub?</button>
+                <button
+                  onClick={() => navigateToSection("features")}
+                  className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => navigateToSection("why-us")}
+                  className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  Why ResourceHub
+                </button>
+                <Link
+                  to="/publicResources"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Explore</span>
+                </Link>
                 <button
                   onClick={() => handleGoogleLogin()}
-                  className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 text-white px-6 py-2.5 rounded-full hover:shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg shadow-purple-500/20"
+                  className="ml-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  Sign Up
+                  Get Started
                 </button>
               </>
             )}
@@ -176,83 +216,101 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden p-2 rounded-xl hover:bg-purple-50/50 transition-colors border border-transparent hover:border-purple-200/50"
+            className="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-6 h-6 text-stone-600" /> : <Menu className="w-6 h-6 text-stone-600" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-white/30 py-4 shadow-xl shadow-purple-500/5">
-            <div className="flex flex-col space-y-3 px-4">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-stone-200 shadow-lg animate-fade-in-up">
+            <div className="px-4 py-4 space-y-1">
               {isAuthenticated ? (
                 <>
-                  {/* Mobile Navigation Links - All 4 links appear here too */}
                   {navigationLinks.map((link) => {
                     const IconComponent = link.icon;
+                    const isActive = isActivePath(link.href);
                     return (
                       <Link
                         key={link.href}
                         to={link.href}
-                        onClick={() => setIsMenuOpen(false)} // Closes menu after navigation
-                        className={`flex items-center space-x-3 transition-all duration-200 px-3 py-3 rounded-xl ${
-                          link.highlight 
-                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg' 
-                            : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50/50'
-                        }`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                          ? 'bg-amber-50 text-slate-800'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                          }`}
                       >
-                        <IconComponent className={`w-5 h-5 ${link.highlight ? 'text-white' : ''}`} />
-                        <span className="font-medium">{link.label}</span>
+                        <IconComponent className="w-5 h-5" />
+                        <span>{link.label}</span>
                       </Link>
                     );
                   })}
 
+                  <Link
+                    to="/createResource"
+                    className="flex items-center gap-3 px-4 py-3 bg-amber-50 text-slate-800 rounded-lg text-sm font-medium"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Add Resource</span>
+                  </Link>
+
                   {/* Mobile Profile Section */}
-                  <div className="border-t border-gray-100/50 pt-4 mt-4">
-                    <div className="flex items-center space-x-3 px-3 py-2 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md overflow-hidden">
+                  <div className="pt-3 mt-3 border-t border-stone-100">
+                    <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-stone-200">
                         {user?.profilePic ? (
                           <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                           <img src={profileImage} alt="Default Profile" className="w-full h-full object-cover" />
                         )}
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-700">{user?.name}</p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-stone-900 truncate">{user?.name}</p>
+                        <p className="text-xs text-stone-500 truncate">{user?.email}</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-3 text-red-600 hover:bg-red-50/50 transition-all duration-200 px-3 py-3 rounded-xl w-full text-left"
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors w-full rounded-lg"
                     >
                       <LogOut className="w-5 h-5" />
-                      <span className="font-medium">Logout</span>
+                      <span>Sign out</span>
                     </button>
                   </div>
                 </>
               ) : (
-                /* Mobile Logged Out State */
                 <>
-                  <button onClick={() => {
-                    navigateToSection("features");
-                    setIsMenuOpen(false);
-                  }}
-                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Features</button>
-                  <button onClick={() => {
-                    navigateToSection("why-us");
-                    setIsMenuOpen(false);
-                  }}
-                    className="text-gray-700 hover:text-purple-600 transition-colors px-3 py-3 rounded-xl hover:bg-purple-50/50">Why ResourceHub?</button>
+                  <button
+                    onClick={() => {
+                      navigateToSection("features");
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-lg transition-colors"
+                  >
+                    Features
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigateToSection("why-us");
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-lg transition-colors"
+                  >
+                    Why ResourceHub
+                  </button>
+                  <Link
+                    to="/publicResources"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-lg transition-colors"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                    Explore Resources
+                  </Link>
                   <button
                     onClick={() => handleGoogleLogin()}
-                    className="bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 w-full font-medium shadow-lg shadow-purple-500/20 mt-4"
+                    className="w-full mt-2 px-5 py-3 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200"
                   >
-                    Sign Up
+                    Get Started
                   </button>
                 </>
               )}

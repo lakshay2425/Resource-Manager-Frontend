@@ -7,6 +7,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx';
 import {LoadingProvider} from './context/LoadingContext.jsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -15,7 +19,9 @@ createRoot(document.getElementById('root')).render(
     <LoadingProvider>
     <AuthProvider>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <QueryClientProvider client={queryClient}>
     <App />
+    </QueryClientProvider>
     </GoogleOAuthProvider>    
     </AuthProvider>
     </LoadingProvider>

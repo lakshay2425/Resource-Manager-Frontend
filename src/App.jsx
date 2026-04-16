@@ -1,6 +1,7 @@
 import { useEffect, useContext , Suspense, lazy} from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AuthContext } from './context/AuthContext.jsx'
+import posthog from 'posthog-js'
 const EditResource = lazy(()=> import("./pages/EditResource.jsx"))
 const ResourceCreationForm = lazy(()=> import("./pages/createForm.jsx"))
 const Home = lazy(()=> import("./pages/Home.jsx"))
@@ -14,8 +15,15 @@ const NotFound = lazy(()=> import("./pages/NotFound.jsx"))
 const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
 const LoadingScreen = lazy(()=> import("./components/LoadingScreen.jsx"))
 const Bookmark = lazy(()=> import("./pages/BookmarkResources.jsx"))
+const DocumentManagement = lazy(()=> import("./pages/DocumentManagement.jsx"))
 
 function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    posthog.capture('$pageview')
+  }, [location])
+
   useEffect(() => {
     const preventDefault = (e) => {
       e.preventDefault();
@@ -82,6 +90,15 @@ function App() {
             <RenderProtectedRoute
             condition={isAuthenticated}
             renderPage={<EditResource />}
+            fallback='/'
+            errorMessage='You need to login to access this page'
+            />
+          }
+          />
+          <Route path='/documents' element={
+            <RenderProtectedRoute
+            condition={isAuthenticated}
+            renderPage={<DocumentManagement />}
             fallback='/'
             errorMessage='You need to login to access this page'
             />

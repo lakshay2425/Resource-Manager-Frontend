@@ -1,6 +1,5 @@
-// import LoadingBar from "../components/LoadingBar.jsx";
 import { useState, useEffect, useMemo, useContext } from 'react';
-import { Search, BookmarkPlus, Globe, X, Bookmark, ArrowUpRight, Edit3, AlertTriangle, Trash2, Grid, List, Lock, Plus, } from 'lucide-react';
+import { Search, Layers, Globe, X, Bookmark, ExternalLink, Edit3, AlertTriangle, Trash2, Grid, List, Lock, Plus, Loader2 } from 'lucide-react';
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +8,6 @@ import { handleDeleteResource } from "../utilis/deleteResource.js";
 import { getCategoryColor } from "../utilis/getCategoryColor.js";
 import { getInitials } from "../utilis/getInitials.js";
 import { handleBookmark } from "../utilis/handleBookmark.js";
-// import toast from "react-hot-toast";
 
 export default function AllResourcesPage() {
   const navigate = useNavigate();
@@ -19,7 +17,7 @@ export default function AllResourcesPage() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [sortBy, setSortBy] = useState('recent');
   const [viewMode, setViewMode] = useState('grid');
-  const [activeTab, setActiveTab] = useState('all'); // all, private, public
+  const [activeTab, setActiveTab] = useState('all');
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   const [bookMarkedResourcesId, setBookMarkedResourcesId] = useState([]);
@@ -35,7 +33,6 @@ export default function AllResourcesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // setIsLoading(true);
         const response = await axiosInstance.get(`/resources`);
         setResources(response.data.data || []);
       } catch (error) {
@@ -66,7 +63,6 @@ export default function AllResourcesPage() {
 
   // Handle bookmark change
   const handleBookmarkChange = (resourceId, isBookmarked) => {
-    // Update local state
     setResources(prev =>
       prev.map(r =>
         r._id === resourceId ? { ...r, isBookmarked } : r
@@ -74,12 +70,6 @@ export default function AllResourcesPage() {
     );
   };
 
-
-  // Open delete confirmation modal
-  const openDeleteModal = (resource) => {
-    setResourceToDelete(resource);
-    setShowDeleteModal(true);
-  };
 
   // Close delete confirmation modal
   const closeDeleteModal = () => {
@@ -106,14 +96,12 @@ export default function AllResourcesPage() {
       const matchesStatus = selectedStatus === 'All' ||
         resource.status.toLowerCase() === selectedStatus.toLowerCase();
 
-      // Tab filtering - all resources are user's resources
       let matchesTab = true;
       if (activeTab === 'private') {
         matchesTab = resource.status === 'private';
       } else if (activeTab === 'public') {
         matchesTab = resource.status === 'public';
       }
-      // 'all' tab shows all user resources
 
       return matchesSearch && matchesCategory && matchesStatus && matchesTab;
     });
@@ -138,7 +126,6 @@ export default function AllResourcesPage() {
   }, [filteredResourcesComputed]);
 
   const getStats = () => {
-    // All resources are user's resources since API only returns user's data
     const privateCount = resources.filter(r => r.status === 'private').length;
     const publicCount = resources.filter(r => r.status === 'public').length;
     const totalCount = resources.length;
@@ -155,277 +142,254 @@ export default function AllResourcesPage() {
 
 
     return (
-      <div className={`bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative ${isListView
-          ? 'flex flex-col sm:flex-row sm:items-center p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
-          : 'p-4 sm:p-6'
+      <article className={`group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg ${isListView
+        ? 'flex flex-col sm:flex-row sm:items-center p-5 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
+        : 'p-5 sm:p-6'
         }`}>
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2">
-          {/* Bookmark Button - Instagram Style */}
+
+        {/* Top Right Actions */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {/* Bookmark Button */}
           <button
             onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, bookMarkedResourcesId.includes(resource._id), onBookmarkChange)}
-            className={`p-1.5 sm:p-2 rounded-full transition-all duration-300 ${isBookmarked
-                ? 'bg-purple-50 text-purple-600'
-                : 'bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-500'
+            className={`p-2 rounded-lg transition-all duration-200 ${isBookmarked
+              ? 'bg-amber-50 text-slate-700'
+              : 'bg-stone-100 text-stone-400 hover:bg-amber-50 hover:text-slate-700'
               }`}
             title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
           >
             <Bookmark
-              className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'
-                }`}
+              className={`w-4 h-4 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'}`}
               fill={isBookmarked ? 'currentColor' : 'none'}
               strokeWidth={2}
             />
           </button>
+
+          {/* Status Badge */}
           {resource.status === 'private' ? (
-            <div className="flex items-center space-x-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-2 py-1 rounded-full text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs font-medium">
               <Lock className="w-3 h-3" />
               <span className="hidden sm:inline">Private</span>
-            </div>
+            </span>
           ) : (
-            <div className="flex items-center space-x-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-slate-800 rounded-md text-xs font-medium">
               <Globe className="w-3 h-3" />
               <span className="hidden sm:inline">Public</span>
-            </div>
+            </span>
           )}
         </div>
 
         {/* Resource Content */}
-        <div className={`${isListView ? 'flex-1' : ''} ${isListView ? 'pt-6 sm:pt-0' : 'pt-8 sm:pt-6'}`}>
-          <div className={`flex ${isListView
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0'
-              : 'items-start justify-between mb-3 sm:mb-4'
-            }`}>
-            <div className={`${isListView ? 'flex-1 sm:pr-4' : ''}`}>
-              <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
-                <span className={`px-2 py-1 sm:px-3 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resource.tags[0])}`}>
-                  <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-                  <span className="hidden xs:inline">{resource.tags[0]}</span>
-                </span>
-                {resource.tags.length > 1 && (
-                  <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                    +{resource.tags.length - 1} more
-                  </span>
-                )}
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors leading-tight">
-                {resource.name}
-              </h3>
-              <p className={`text-gray-600 leading-relaxed text-sm sm:text-base ${isListView ? '' : 'mb-3 sm:mb-4'
-                }`}>
-                {resource.description}
+        <div className={`${isListView ? 'flex-1' : ''} pr-32 sm:pr-36`}>
+          {/* Category Badge */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="tag tag-primary">
+              <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
+              <span>{resource.tags[0]}</span>
+            </span>
+            {resource.tags.length > 1 && (
+              <span className="text-xs text-stone-500">
+                +{resource.tags.length - 1} more
+              </span>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-stone-900 mb-2 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+            {resource.name}
+          </h3>
+
+          {/* Description */}
+          <p className={`text-stone-600 text-sm leading-relaxed ${isListView ? '' : 'mb-4'}`}>
+            {resource.description}
+          </p>
+        </div>
+
+        {/* All Tags */}
+        <div className={`flex flex-wrap gap-1.5 ${isListView ? 'mb-3' : 'mb-4'}`}>
+          {resource.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
+            >
+              <CategoryIcon category={tag} className="w-3 h-3" />
+              <span>#{tag}</span>
+            </span>
+          ))}
+        </div>
+
+        {/* User and Stats */}
+        <div className={`flex ${isListView
+          ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
+          : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-stone-100 space-y-3 sm:space-y-0'
+          }`}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-stone-800">You</p>
+              <p className="text-xs text-stone-500">
+                {resource.status === 'private' ? 'Private Resource' : 'Public Resource'}
               </p>
             </div>
           </div>
 
-          {/* All Tags */}
-          <div className={`flex flex-wrap gap-1 sm:gap-2 ${isListView ? 'mb-3' : 'mb-3 sm:mb-4'}`}>
-            {resource.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-gray-50 text-gray-600 px-2 py-1 rounded-md sm:rounded-lg text-xs hover:bg-purple-50 hover:text-purple-600 transition-colors cursor-pointer flex items-center space-x-1"
-              >
-                <CategoryIcon category={tag} className="w-3 h-3" />
-                <span>#{tag}</span>
-              </span>
-            ))}
-          </div>
+          <div className="flex items-center gap-2">
+            {/* Action Buttons */}
+            <button
+              onClick={() => navigate(`/edit/${resource._id}`, { state: { resource } })}
+              className="p-2 text-stone-400 hover:text-slate-700 hover:bg-amber-50 rounded-lg transition-colors"
+              title="Edit Resource"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setShowDeleteModal(true);
+                setResourceToDelete(resource);
+              }}
+              className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete Resource"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
 
-          {/* User and Stats */}
-          <div className={`flex ${isListView
-              ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
-              : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-50 space-y-3 sm:space-y-0'
-            }`}>
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-gray-800">You</p>
-                <p className="text-xs text-gray-500">
-                  {resource.status === 'private' ? 'Private Resource' : 'Public Resource'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4">
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                {/* Edit Button */}
-                <button
-                  onClick={() => navigate(`/edit/${resource._id}`, { state: { resource } })}
-                  className="p-2 text-gray-400 hover:text-blue-500 transition-colors group/edit"
-                  title="Edit Resource"
-                >
-                  <Edit3 className="w-4 h-4 transform group-hover/edit:scale-110 transition-transform duration-200" />
-                </button>
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(true);
-                    setResourceToDelete(resource);
-                  }}
-                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                  title="Delete Resource"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <a
-                href={resource.sourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 flex-shrink-0"
-              >
-                <span>Visit</span>
-                <ArrowUpRight className="w-3 h-3" />
-              </a>
-            </div>
+            {/* Visit Link */}
+            <a
+              href={resource.sourceLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 group/link"
+            >
+              <span>Visit</span>
+              <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+            </a>
           </div>
         </div>
-      </div>
+      </article>
     );
   };
 
   // Loading State
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center space-x-3 mb-6 sm:mb-8">
-            <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" fill="currentColor" />
-            <h1 className="text-2xl sm:text-3xl font-bold">My Resources</h1>
-          </div>
-          <div className="flex flex-col items-center justify-center py-12 sm:py-16">
-            <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-purple-600 mb-4"></div>
-            <p className="text-gray-600 text-sm sm:text-base">Loading your resources...</p>
+      <div className="min-h-screen bg-stone-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 text-slate-700 animate-spin mb-4" />
+            <p className="text-stone-600">Loading your resources...</p>
           </div>
         </div>
       </div>
     );
   }
+
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-stone-50">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div className="bg-white border-b border-stone-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-display)' }}>
                   My Resources
                 </h1>
-                <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your private and public resources</p>
+                <p className="text-stone-600 mt-1">Manage your private and public resources</p>
               </div>
 
               {/* Stats */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <div className="flex items-center space-x-2 bg-white rounded-full px-3 py-2 sm:px-4 shadow-sm border border-gray-200">
-                  <BookmarkPlus className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">{stats.totalCount} Total</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-2 bg-stone-100 rounded-lg">
+                  <Layers className="w-4 h-4 text-stone-500" />
+                  <span className="text-sm font-medium text-stone-700">{stats.totalCount} Total</span>
                 </div>
-                <div className="flex items-center space-x-2 bg-white rounded-full px-3 py-2 sm:px-4 shadow-sm border border-gray-200">
-                  <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">{stats.privateCount} Private</span>
+                <div className="flex items-center gap-2 px-3 py-2 bg-stone-100 rounded-lg">
+                  <Lock className="w-4 h-4 text-stone-500" />
+                  <span className="text-sm font-medium text-stone-700">{stats.privateCount} Private</span>
                 </div>
-                <div className="flex items-center space-x-2 bg-white rounded-full px-3 py-2 sm:px-4 shadow-sm border border-gray-200">
-                  <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">{stats.publicCount} Public</span>
+                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg">
+                  <Globe className="w-4 h-4 text-slate-700" />
+                  <span className="text-sm font-medium text-slate-800">{stats.publicCount} Public</span>
                 </div>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 rounded-lg sm:rounded-xl p-1 mt-4 sm:mt-6 w-full overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'all'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-purple-600'
-                  }`}
-              >
-                All Resources ({stats.totalCount})
-              </button>
-              <button
-                onClick={() => setActiveTab('private')}
-                className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'private'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-purple-600'
-                  }`}
-              >
-                Private ({stats.privateCount})
-              </button>
-              <button
-                onClick={() => setActiveTab('public')}
-                className={`px-4 py-2 sm:px-6 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0 ${activeTab === 'public'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-purple-600'
-                  }`}
-              >
-                Public ({stats.publicCount})
-              </button>
+            <div className="flex gap-1 bg-stone-100 rounded-lg p-1 mt-6 w-full sm:w-auto overflow-x-auto">
+              {[
+                { key: 'all', label: `All (${stats.totalCount})` },
+                { key: 'private', label: `Private (${stats.privateCount})` },
+                { key: 'public', label: `Public (${stats.publicCount})` },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex-shrink-0 ${activeTab === tab.key
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Search and Filters */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/30 shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl border border-stone-200 p-4 sm:p-6 mb-6">
             <div className="space-y-4">
               {/* Search Bar */}
-              <div className="w-full">
-                <div className="relative">
-                  <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search your resources, descriptions, or tags..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm text-sm sm:text-base"
-                  />
-                </div>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400" />
+                <input
+                  type="text"
+                  placeholder="Search your resources, descriptions, or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input pl-12"
+                />
               </div>
 
               {/* Filters Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {/* Category Filter */}
-                <div className="flex-1 sm:flex-none">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full sm:w-auto px-3 sm:px-4 py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base min-w-[120px]"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="input sm:w-auto"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
 
                 {/* Sort Filter */}
-                <div className="flex-1 sm:flex-none">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full sm:w-auto px-3 sm:px-4 py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base min-w-[140px]"
-                  >
-                    <option value="recent">Most Recent</option>
-                    <option value="alphabetical">Alphabetical</option>
-                  </select>
-                </div>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="input sm:w-auto"
+                >
+                  <option value="recent">Most Recent</option>
+                  <option value="alphabetical">Alphabetical</option>
+                </select>
 
                 {/* View Mode Toggle */}
-                <div className="flex bg-white rounded-lg sm:rounded-xl p-1 shadow-sm border border-gray-200 w-full sm:w-auto justify-center">
+                <div className="flex bg-stone-100 rounded-lg p-1 sm:ml-auto">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
-                      }`}
+                    className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white text-slate-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
                   >
-                    <Grid className="w-4 h-4 mx-auto" />
+                    <Grid className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`flex-1 sm:flex-none p-2 rounded-md sm:rounded-lg transition-colors ${viewMode === 'list' ? 'bg-purple-500 text-white' : 'text-gray-500 hover:text-purple-500'
-                      }`}
+                    className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white text-slate-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
                   >
-                    <List className="w-4 h-4 mx-auto" />
+                    <List className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -434,11 +398,11 @@ export default function AllResourcesPage() {
 
           {/* Search Results Info */}
           {(searchTerm || selectedCategory !== 'All') && (
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg sm:rounded-xl p-4 mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <div className="flex items-center space-x-2">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2 text-slate-800">
+                  <Search className="w-4 h-4" />
+                  <span className="text-sm">
                     Found <strong>{filteredResources.length}</strong> resources
                     {searchTerm && <> for "<strong>{searchTerm}</strong>"</>}
                     {selectedCategory !== 'All' && <> in "<strong>{selectedCategory}</strong>"</>}
@@ -449,10 +413,10 @@ export default function AllResourcesPage() {
                     setSearchTerm('');
                     setSelectedCategory('All');
                   }}
-                  className="flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors w-full sm:w-auto"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-800 hover:bg-amber-100 rounded-md transition-colors"
                 >
-                  <span className="text-sm">Clear</span>
                   <X className="w-4 h-4" />
+                  <span>Clear filters</span>
                 </button>
               </div>
             </div>
@@ -462,8 +426,8 @@ export default function AllResourcesPage() {
           {filteredResources.length > 0 ? (
             <div className={
               viewMode === 'grid'
-                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
-                : "space-y-4 sm:space-y-6"
+                ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+                : "space-y-4"
             }>
               {filteredResources.map(resource => (
                 <ResourceCard
@@ -472,41 +436,42 @@ export default function AllResourcesPage() {
                   bookMarkedResourcesId={bookMarkedResourcesId}
                   isListView={viewMode === 'list'}
                   onBookmarkChange={handleBookmarkChange}
-                  onDeleteClick={openDeleteModal}
                 />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 sm:py-16">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <BookmarkPlus className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400" />
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Layers className="w-10 h-10 text-stone-400" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">No resources found</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto px-4 sm:px-0">
+              <h3 className="text-xl font-semibold text-stone-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                No resources found
+              </h3>
+              <p className="text-stone-600 mb-6 max-w-md mx-auto">
                 {activeTab === 'private'
-                  ? "You haven't created any private resources yet. Start building your personal collection!"
+                  ? "You haven't created any private resources yet. Start building your personal collection."
                   : activeTab === 'public'
-                    ? "You haven't made any resources public yet. Share your knowledge with the community!"
+                    ? "You haven't made any resources public yet. Share your knowledge with the community."
                     : searchTerm || selectedCategory !== 'All'
                       ? "No resources match your current filters. Try adjusting your search criteria."
-                      : "You haven't created any resources yet. Start building your collection!"
+                      : "You haven't created any resources yet. Start building your collection."
                 }
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0">
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
                 {(searchTerm || selectedCategory !== 'All') && (
                   <button
                     onClick={() => {
                       setSearchTerm('');
                       setSelectedCategory('All');
                     }}
-                    className="bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+                    className="btn-secondary"
                   >
                     Clear Filters
                   </button>
                 )}
                 <button
                   onClick={() => navigate("/createResource")}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 w-full sm:w-auto"
+                  className="btn-primary"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Resource</span>
@@ -520,71 +485,59 @@ export default function AllResourcesPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && resourceToDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={closeDeleteModal}
         >
-          {/* Modal Content */}
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-in zoom-in-95 duration-200"
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header with Icon */}
+            {/* Modal Header */}
             <div className="flex flex-col items-center text-center mb-6">
-              {/* Warning Icon with gradient background */}
-              <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-7 h-7 text-red-600" />
               </div>
-
-              {/* Modal Title */}
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                Delete Resource?
+              <h3 className="text-xl font-semibold text-stone-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                Delete Resource
               </h3>
-
-              {/* Modal Description */}
-              <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-                Are you sure you want to permanently delete <span className="font-semibold text-gray-900">"{resourceToDelete.name}"</span>? This action cannot be undone and will remove the resource from your collection.
+              <p className="text-stone-600 text-sm">
+                Are you sure you want to permanently delete <span className="font-medium text-stone-900">"{resourceToDelete.name}"</span>? This action cannot be undone.
               </p>
             </div>
 
-            {/* Resource Info Preview - Optional but helpful context */}
-            <div className="bg-gray-50 rounded-lg p-3 mb-6">
-              <div className="flex items-start space-x-3">
-                <div className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center space-x-1 ${getCategoryColor(resourceToDelete.tags?.[0] || 'general')}`}>
+            {/* Resource Preview */}
+            <div className="bg-stone-50 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <span className={`tag tag-primary`}>
                   <CategoryIcon category={resourceToDelete.tags?.[0] || 'general'} className="w-3 h-3" />
                   <span>{resourceToDelete.tags?.[0] || 'Resource'}</span>
-                </div>
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{resourceToDelete.name}</p>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
+                  <p className="text-sm font-medium text-stone-900 truncate">{resourceToDelete.name}</p>
+                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* Cancel Button */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={closeDeleteModal}
                 disabled={isDeleting}
-                className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 btn-secondary"
               >
                 Cancel
               </button>
-
-              {/* Confirm Delete Button */}
               <button
                 onClick={() => handleDeleteResource(setResources, resourceToDelete, setIsDeleting, setShowDeleteModal, setResourceToDelete)}
                 disabled={isDeleting}
-                className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:shadow-lg hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="flex-1 px-6 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
-                  <span className="flex items-center justify-center space-x-2">
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Deleting...</span>
-                  </span>
+                  </>
                 ) : (
                   'Delete Resource'
                 )}
@@ -593,13 +546,6 @@ export default function AllResourcesPage() {
           </div>
         </div>
       )}
-
     </>
   );
 }
-
-
-
-
-
-
