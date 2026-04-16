@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { Layers, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle, ExternalLink } from 'lucide-react';
+import { Layers, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle, ExternalLink, FileText } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from 'axios';
@@ -84,6 +84,12 @@ const Navbar = () => {
       label: 'Saved',
       icon: Bookmark,
       description: 'View your saved bookmarks'
+    },
+    {
+      href: '/documents',
+      label: 'Documents',
+      icon: FileText,
+      description: 'Manage your uploaded documents'
     },
   ];
 
