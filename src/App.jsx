@@ -15,6 +15,7 @@ const NotFound = lazy(()=> import("./pages/NotFound.jsx"))
 const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
 const LoadingScreen = lazy(()=> import("./components/LoadingScreen.jsx"))
 const Bookmark = lazy(()=> import("./pages/BookmarkResources.jsx"))
+const DocumentManagement = lazy(()=> import("./pages/DocumentManagement.jsx"))
 
 function App() {
   const location = useLocation()
@@ -89,6 +90,15 @@ function App() {
             <RenderProtectedRoute
             condition={isAuthenticated}
             renderPage={<EditResource />}
+            fallback='/'
+            errorMessage='You need to login to access this page'
+            />
+          }
+          />
+          <Route path='/documents' element={
+            <RenderProtectedRoute
+            condition={isAuthenticated}
+            renderPage={<DocumentManagement />}
             fallback='/'
             errorMessage='You need to login to access this page'
             />
