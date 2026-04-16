@@ -21,9 +21,6 @@ export const uploadToMinio = async ({ postURL, formData, file, mimeType }) => {
     data.append(key, formData[key]);
   }
   
-  // Important: append Content-Type before the file (MinIO policy needs the matching content type)
-  data.append('Content-Type', mimeType);
-
   // SUPER CRITICAL: MUST append file as the LAST parameter
   data.append('file', file);
   
