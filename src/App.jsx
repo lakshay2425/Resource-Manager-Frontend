@@ -1,5 +1,5 @@
 import { useEffect, useContext , Suspense, lazy} from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { AuthContext } from './context/AuthContext.jsx'
 
 const EditResource = lazy(()=> import("./pages/EditResource.jsx"))
@@ -18,9 +18,6 @@ const Bookmark = lazy(()=> import("./pages/BookmarkResources.jsx"))
 const DocumentManagement = lazy(()=> import("./pages/DocumentManagement.jsx"))
 
 function App() {
-  const location = useLocation()
-
-
   useEffect(() => {
     const preventDefault = (e) => {
       e.preventDefault();

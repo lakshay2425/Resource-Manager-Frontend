@@ -22,6 +22,15 @@ const DocumentManagement = () => {
   const [viewId, setViewId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const closeModal = () => setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+  
   const fileInputRef = useRef(null);
 
   const documents = data?.documents || [];
@@ -49,7 +58,14 @@ const DocumentManagement = () => {
         }
       },
       onError: (err) => {
-        toast.error('Failed to upload document.');
+        let errorMessage = 'Failed to upload document.';
+        if (err?.response?.status === 403) {
+          errorMessage = 'You cannot upload more than 2 documents.';
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        }
+        
+        toast.error(errorMessage);
         console.error('Upload Error:', err);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -58,37 +74,64 @@ const DocumentManagement = () => {
     });
   };
 
+  const executeDelete = (id) => {
+    setDeleteId(id);
+    deleteDocument(id, {
+      onSuccess: () => {
+        toast.success('Document deleted successfully.');
+        setDeleteId(null);
+        closeModal();
+      },
+      onError: (err) => {
+        const errorMessage = err?.response?.data?.message || 'Failed to delete document.';
+        toast.error(errorMessage);
+        setDeleteId(null);
+        closeModal();
+      }
+    });
+  };
+
+  const executeDeleteAll = () => {
+    deleteAllDocuments(undefined, {
+      onSuccess: () => {
+        toast.success('All documents deleted.');
+        closeModal();
+      },
+      onError: (err) => {
+        const errorMessage = err?.response?.data?.message || 'Failed to delete documents.';
+        toast.error(errorMessage);
+        closeModal();
+      }
+    });
+  };
+
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
-      setDeleteId(id);
-      deleteDocument(id, {
-        onSuccess: () => {
-          toast.success('Document deleted context.');
-          setDeleteId(null);
-        },
-        onError: () => {
-          toast.error('Failed to delete document.');
-          setDeleteId(null);
-        }
-      });
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Document',
+      message: 'Are you sure you want to delete this document?',
+      onConfirm: () => executeDelete(id)
+    });
   };
 
   const handleView = (id) => {
     setViewId(id);
     viewDocument(id, {
       onSettled: () => setViewId(null),
-      onError: () => toast.error('Failed to view document.')
+      onError: (err) => {
+        const errorMessage = err?.response?.data?.message || 'Failed to view document.';
+        toast.error(errorMessage);
+      }
     });
   };
 
   const handleDeleteAll = () => {
-    if (window.confirm('Are you ABSOLUTELY sure you want to delete ALL documents? This action cannot be undone.')) {
-      deleteAllDocuments(undefined, {
-        onSuccess: () => toast.success('All documents deleted.'),
-        onError: () => toast.error('Failed to delete documents.')
-      });
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete All Documents',
+      message: 'Are you ABSOLUTELY sure you want to delete ALL documents? This action cannot be undone.',
+      onConfirm: () => executeDeleteAll()
+    });
   };
 
   return (
@@ -230,6 +273,40 @@ const DocumentManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden transform transition-all">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-center text-gray-900 mb-2">{confirmModal.title}</h3>
+              <p className="text-sm text-center text-gray-500 mb-6">{confirmModal.message}</p>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={closeModal}
+                  disabled={isDeleting || isDeletingAll}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  disabled={isDeleting || isDeletingAll}
+                  className="flex-1 flex items-center justify-center px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {(isDeleting || isDeletingAll) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
