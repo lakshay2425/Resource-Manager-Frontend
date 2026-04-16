@@ -1,7 +1,7 @@
 import { useEffect, useContext , Suspense, lazy} from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AuthContext } from './context/AuthContext.jsx'
-import posthog from 'posthog-js'
+
 const EditResource = lazy(()=> import("./pages/EditResource.jsx"))
 const ResourceCreationForm = lazy(()=> import("./pages/createForm.jsx"))
 const Home = lazy(()=> import("./pages/Home.jsx"))
@@ -20,9 +20,6 @@ const DocumentManagement = lazy(()=> import("./pages/DocumentManagement.jsx"))
 function App() {
   const location = useLocation()
 
-  useEffect(() => {
-    posthog.capture('$pageview')
-  }, [location])
 
   useEffect(() => {
     const preventDefault = (e) => {
