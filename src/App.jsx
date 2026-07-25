@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthContext } from './context/AuthContext.jsx'
 
 const EditResource = lazy(()=> import("./pages/EditResource.jsx"))
-const ResourceCreationForm = lazy(()=> import("./pages/createForm.jsx"))
+const ResourceCreationForm = lazy(()=> import("./pages/CreateResource.jsx"))
 const Home = lazy(()=> import("./pages/Home.jsx"))
 const PublicResources =  lazy(()=> import("./pages/publicResources.jsx"))
 const Resource = lazy(()=> import("./pages/Resources.jsx"))
