@@ -5,7 +5,6 @@ import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from "../context/AuthContext.jsx";
 import { handleDeleteResource } from "../utilis/deleteResource.js";
-import { getCategoryColor } from "../utilis/getCategoryColor.js";
 import { getInitials } from "../utilis/getInitials.js";
 import { handleBookmark } from "../utilis/handleBookmark.js";
 
@@ -80,18 +79,21 @@ export default function AllResourcesPage() {
   };
 
   // Get unique categories from resources
-  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
+  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags || []))];
 
   // Filter and sort resources
   const filteredResourcesComputed = useMemo(() => {
     let filtered = resources.filter(resource => {
+      const tags = resource.tags || [];
+      const description = resource.description || '';
+
       const matchesSearch = searchTerm === '' ||
         resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+        description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesCategory = selectedCategory === 'All' ||
-        resource.tags.includes(selectedCategory);
+        tags.includes(selectedCategory);
 
       const matchesStatus = selectedStatus === 'All' ||
         resource.status.toLowerCase() === selectedStatus.toLowerCase();
@@ -139,6 +141,10 @@ export default function AllResourcesPage() {
     const navigate = useNavigate();
     const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const tags = resource.tags || [];
+    const description = resource.description?.trim()
+      ? resource.description
+      : 'No description yet — edit this resource to add one.';
 
 
     return (
@@ -184,12 +190,12 @@ export default function AllResourcesPage() {
           {/* Category Badge */}
           <div className="flex items-center gap-2 mb-3">
             <span className="tag tag-primary">
-              <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-              <span>{resource.tags[0]}</span>
+              <CategoryIcon category={tags[0] || 'general'} className="w-3 h-3" />
+              <span>{tags[0] || 'Untagged'}</span>
             </span>
-            {resource.tags.length > 1 && (
+            {tags.length > 1 && (
               <span className="text-xs text-stone-500">
-                +{resource.tags.length - 1} more
+                +{tags.length - 1} more
               </span>
             )}
           </div>
@@ -200,23 +206,25 @@ export default function AllResourcesPage() {
           </h3>
 
           {/* Description */}
-          <p className={`text-stone-600 text-sm leading-relaxed ${isListView ? '' : 'mb-4'}`}>
-            {resource.description}
+          <p className={`text-stone-600 text-sm leading-relaxed ${!resource.description?.trim() ? 'italic text-stone-400' : ''} ${isListView ? '' : 'mb-4'}`}>
+            {description}
           </p>
         </div>
 
         {/* All Tags */}
-        <div className={`flex flex-wrap gap-1.5 ${isListView ? 'mb-3' : 'mb-4'}`}>
-          {resource.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
-            >
-              <CategoryIcon category={tag} className="w-3 h-3" />
-              <span>#{tag}</span>
-            </span>
-          ))}
-        </div>
+        {tags.length > 0 && (
+          <div className={`flex flex-wrap gap-1.5 ${isListView ? 'mb-3' : 'mb-4'}`}>
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
+              >
+                <CategoryIcon category={tag} className="w-3 h-3" />
+                <span>#{tag}</span>
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* User and Stats */}
         <div className={`flex ${isListView
@@ -514,7 +522,7 @@ export default function AllResourcesPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-stone-900 truncate">{resourceToDelete.name}</p>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
+                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description || 'No description yet'}</p>
                 </div>
               </div>
             </div>

@@ -1,5 +1,4 @@
 import { getInitials } from "../utilis/getInitials.js";
-import { getCategoryColor } from "../utilis/getCategoryColor.js"
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, useContext, } from 'react';
 import { Search, Globe, X, Grid, List, Bookmark, ChevronUp, ChevronDown, ExternalLink, Loader2 } from 'lucide-react';
@@ -39,7 +38,7 @@ export default function PublicResourcesPage() {
   }, []);
 
   // Get unique categories from resources
-  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
+  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags || []))];
 
   // Handle bookmark change - update the local state when bookmark status changes
   const handleBookmarkChange = (resourceId, isBookmarked) => {
@@ -72,13 +71,16 @@ export default function PublicResourcesPage() {
   // Filter and sort resources
   useEffect(() => {
     let filtered = resources.filter(resource => {
+      const tags = resource.tags || [];
+      const description = resource.description || '';
+
       const matchesSearch = searchTerm === '' ||
         resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+        description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesCategory = selectedCategory === 'All' ||
-        resource.tags.includes(selectedCategory);
+        tags.includes(selectedCategory);
 
       return matchesSearch && matchesCategory;
     });
@@ -102,11 +104,15 @@ export default function PublicResourcesPage() {
     const [showAllTags, setShowAllTags] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const tags = resource.tags || [];
+    const description = resource.description?.trim()
+      ? resource.description
+      : 'No description available';
 
 
     // Show only first 3 tags on mobile, all on larger screens
-    const visibleTags = showAllTags ? resource.tags : resource.tags.slice(0, 3);
-    const hasMoreTags = resource.tags.length > 3;
+    const visibleTags = showAllTags ? tags : tags.slice(0, 3);
+    const hasMoreTags = tags.length > 3;
 
     return (
       <article className={`group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg ${isListView
@@ -139,12 +145,12 @@ export default function PublicResourcesPage() {
           {/* Category Badge */}
           <div className="flex items-center gap-2 mb-3">
             <span className={`tag tag-primary`}>
-              <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-              <span>{resource.tags[0]}</span>
+              <CategoryIcon category={tags[0] || 'general'} className="w-3 h-3" />
+              <span>{tags[0] || 'Untagged'}</span>
             </span>
-            {resource.tags.length > 1 && (
+            {tags.length > 1 && (
               <span className="text-xs text-stone-500">
-                +{resource.tags.length - 1} more
+                +{tags.length - 1} more
               </span>
             )}
           </div>
@@ -162,36 +168,38 @@ export default function PublicResourcesPage() {
           </h3>
 
           {/* Description */}
-          <p className={`text-stone-600 text-sm leading-relaxed ${isListView ? '' : 'mb-4'}`}>
-            {resource.description}
+          <p className={`text-stone-600 text-sm leading-relaxed ${!resource.description?.trim() ? 'italic text-stone-400' : ''} ${isListView ? '' : 'mb-4'}`}>
+            {description}
           </p>
         </div>
 
         {/* All Tags */}
-        <div className={`${isListView ? 'mb-3' : 'mb-4'}`}>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {visibleTags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
-              >
-                <CategoryIcon category={tag} className="w-3 h-3" />
-                <span>#{tag}</span>
-              </span>
-            ))}
-          </div>
+        {tags.length > 0 && (
+          <div className={`${isListView ? 'mb-3' : 'mb-4'}`}>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {visibleTags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
+                >
+                  <CategoryIcon category={tag} className="w-3 h-3" />
+                  <span>#{tag}</span>
+                </span>
+              ))}
+            </div>
 
-          {/* Show More/Less button for tags on mobile */}
-          {hasMoreTags && (
-            <button
-              onClick={() => setShowAllTags(!showAllTags)}
-              className="flex items-center gap-1 text-xs text-slate-700 hover:text-slate-800 transition-colors sm:hidden"
-            >
-              <span>{showAllTags ? 'Show less' : `Show ${resource.tags.length - 3} more`}</span>
-              {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          )}
-        </div>
+            {/* Show More/Less button for tags on mobile */}
+            {hasMoreTags && (
+              <button
+                onClick={() => setShowAllTags(!showAllTags)}
+                className="flex items-center gap-1 text-xs text-slate-700 hover:text-slate-800 transition-colors sm:hidden"
+              >
+                <span>{showAllTags ? 'Show less' : `Show ${tags.length - 3} more`}</span>
+                {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* User and Stats */}
         <div className={`flex ${isListView
