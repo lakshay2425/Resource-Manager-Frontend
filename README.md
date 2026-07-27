@@ -12,11 +12,13 @@
 
 ### 🔐 **Smart Resource Management**
 
-- **Private & Public Resources**: Control who can see your resources with privacy settings
-- **Intelligent Tagging**: Organize resources with custom tags and predefined suggestions
+- **Fast Create Flow**: Add a resource with only a name and link; ownership comes from auth
+- **Private by Default**: New resources are always created as private
+- **Edit Enrichment**: Add description, tags, visibility, and update the URL on the edit page
+- **Intelligent Tagging**: Organize resources with custom tags and predefined suggestions (on edit)
 - **Advanced Search**: Find resources by name, description, or tags instantly
 - **Category Filtering**: Browse resources by categories with visual icons
-- **Resource Editing**: Edit existing resources with seamless user experience
+- **Resource Editing**: Full edit form prefilled with existing resource values
 
 ### 🎨 **Modern User Experience**
 
@@ -175,10 +177,10 @@ The Dockerfile uses a multi-stage build process:
 src/
 ├── components/              # Reusable UI components
 │   ├── HomePage/           # Landing page specific components
-│   │   ├── DiscordBot.jsx  # Discord bot showcase
 │   │   ├── Features.jsx    # Features section
 │   │   ├── HeroSection.jsx # Hero banner
 │   │   └── WhyRH.jsx      # Why ResourceHub section
+│   ├── BookmarkCard.jsx    # Bookmark list card
 │   ├── Footer.jsx          # Application footer
 │   ├── LoadingBar.jsx      # Loading spinner component
 │   ├── LoadingScreen.jsx   # Full-screen loading component
@@ -187,6 +189,7 @@ src/
 │   ├── AuthContext.jsx     # Authentication state management
 │   └── LoadingContext.jsx  # Loading state management
 ├── hooks/                  # Custom React hooks
+│   ├── useDocuments.js     # Document React Query hooks
 │   ├── useGoogleOAuth.js   # Google OAuth integration
 │   ├── useLocalStorage.js  # Local storage state sync
 │   ├── useLoading.js       # Loading state hook
@@ -195,9 +198,13 @@ src/
 │   ├── Home.jsx            # Landing page
 │   ├── Resources.jsx       # User's resource management
 │   ├── publicResources.jsx # Community resources
-│   ├── createForm.jsx      # Resource creation form
-│   ├── EditResource.jsx    # Resource editing interface
+│   ├── CreateResource.jsx  # Create form (name + link only)
+│   ├── EditResource.jsx    # Edit form (full fields, prefilled)
+│   ├── BookmarkResources.jsx # User bookmarks
+│   ├── DocumentManagement.jsx # Document upload/management
 │   └── NotFound.jsx        # 404 error page
+├── api/                    # API client helpers
+│   └── documentApi.js      # Document / MinIO upload APIs
 ├── utilis/                 # Utility functions
 │   ├── Axios.jsx           # API client configuration
 │   ├── getCategoryColor.js # Tag color generation
@@ -257,13 +264,40 @@ Secure routes that require authentication with custom protection logic:
 
 ### **Resource Management**
 
-Full CRUD operations for resources with real-time updates:
+Create and edit use **separate page components** (not one shared form):
 
-- Create new resources with live preview and tag suggestions
-- Edit existing resources with form validation
+| Page | Route | Component | Fields |
+|------|-------|-----------|--------|
+| Create | `/createResource` | `CreateResource.jsx` | `name`, `link` only |
+| Edit | `/edit/:id` | `EditResource.jsx` | name, description, tags, status, `sourceLink` (prefilled) |
+
+- **Create**: `POST /resources` with `{ name, link }` — no `email` in body (owner from auth cookie); server always creates as `private`
+- **Edit**: `PATCH /resources/:id` with `{ updatedFields: { ... } }` — use `sourceLink` (not `link`) for URL updates
 - Delete resources with confirmation modals
-- Filter and search capabilities with debouncing
-- Tag-based organization system
+- Filter and search (handles missing description / empty tags)
+- Tag-based organization on the edit flow
+
+### **Create vs Edit API shapes**
+
+```js
+// CREATE — CreateResource.jsx
+// POST /api/resources
+{ name: string /* min 5 */, link: string /* valid URL → stored as sourceLink */ }
+
+// UPDATE — EditResource.jsx
+// PATCH /api/resources/:id
+{
+  updatedFields: {
+    name?: string,          // min 5
+    description?: string,   // min 10 when present
+    tags?: string[],
+    status?: "public" | "private",
+    sourceLink?: string     // valid URL
+  }
+}
+```
+
+**Field name trap:** create uses `link`; GET responses and PATCH use `sourceLink`.
 
 ### **Google OAuth Integration**
 
@@ -315,22 +349,35 @@ The project uses Vite with optimized settings for:
 
 ## 📱 Features in Detail
 
-### **Resource Creation**
+### **Resource Creation** (`CreateResource.jsx`)
 
-- **Live Preview**: Real-time preview of resource cards as you type
-- **Tag Suggestions**: Predefined tags with auto-complete functionality
-- **URL Validation**: Real-time link validation with visual feedback
-- **Privacy Controls**: Toggle between private and public visibility
-- **Form Validation**: Comprehensive validation with error messages
-- **Success States**: Animated success screens with navigation options
+Dedicated create form — **not** the edit form reused with empty values:
+
+- **Fields**: Resource name + URL (`link`) only
+- **Validation**: Name ≥ 5 characters; link must be a valid URL
+- **Privacy**: Always created as private (no visibility picker on create)
+- **Ownership**: Taken from the auth cookie — do not send `email` in the body
+- **Live Preview**: Shows name/link preview marked as private
+- **Success State**: Navigate to My Resources or create another
+- **Enrich later**: Description, tags, and public/private are set on the edit page
+
+### **Resource Editing** (`EditResource.jsx`)
+
+Separate full form, opened with existing resource values via router state:
+
+- Prefills name, description, tags, status, and `sourceLink`
+- Client validation aligned with backend PATCH rules
+- Maps the URL field to **`sourceLink`** in the PATCH body
+- Optional description (min 10 characters when provided)
+- Visibility toggle and tag management
 
 ### **Resource Discovery**
 
-- **Smart Search**: Search across names, descriptions, and tags with debouncing
+- **Smart Search**: Search across names, descriptions, and tags (safe when description/tags are missing)
 - **Category Filtering**: Filter by resource categories with visual indicators
 - **Sorting Options**: Sort by date, alphabetically, or relevance
 - **View Modes**: Toggle between grid and list views with animations
-- **Pagination**: Efficient loading of large resource sets
+- **Empty-field resilience**: Placeholders when description is missing; empty tags treated as `[]`
 
 ### **User Experience**
 
