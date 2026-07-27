@@ -64,11 +64,11 @@ export default function EditResourcePage() {
   useEffect(() => {
     if (initialResource) {
       reset({
-        name: initialResource.name,
-        sourceLink: initialResource.sourceLink,
-        tags: initialResource.tags,
-        status: initialResource.status,
-        description: initialResource.description,
+        name: initialResource.name || '',
+        sourceLink: initialResource.sourceLink || '',
+        tags: initialResource.tags || [],
+        status: initialResource.status === 'public' ? 'public' : 'private',
+        description: initialResource.description || '',
       });
     }
     setIsAnimating(true);
@@ -79,11 +79,21 @@ export default function EditResourcePage() {
     const changedValues = {};
 
     for (const key in dirtyFields) {
-      if (dirtyFields[key] === true) {
+      // RHF marks array fields as nested dirty objects/arrays, not always `true`
+      if (dirtyFields[key]) {
         changedValues[key] = allValues[key];
       }
     }
     return changedValues;
+  };
+
+  const isValidUrl = (value) => {
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const handleStatusToggle = () => {
@@ -92,19 +102,33 @@ export default function EditResourcePage() {
 
   const addTag = (tag) => {
     const trimmedTag = tag.trim();
-    if (trimmedTag && !currentTags.includes(trimmedTag)) {
-      setValue('tags', [...currentTags, trimmedTag], { shouldDirty: true });
+    if (trimmedTag && !(currentTags || []).includes(trimmedTag)) {
+      setValue('tags', [...(currentTags || []), trimmedTag], { shouldDirty: true });
       setNewTag('');
       setShowSuggestions(false);
     }
   };
 
   const removeTag = (tagToRemove) => {
-    setValue('tags', currentTags.filter(tag => tag !== tagToRemove), { shouldDirty: true });
+    setValue('tags', (currentTags || []).filter(tag => tag !== tagToRemove), { shouldDirty: true });
   };
 
   const onSubmit = async (data) => {
     const updatedFields = getDirtyValues(dirtyFields, data);
+
+    if (updatedFields.name !== undefined) {
+      updatedFields.name = updatedFields.name.trim();
+    }
+    if (updatedFields.description !== undefined) {
+      updatedFields.description = updatedFields.description.trim();
+      // Backend rejects empty description (min 10 when present) — omit cleared values
+      if (!updatedFields.description) {
+        delete updatedFields.description;
+      }
+    }
+    if (updatedFields.sourceLink !== undefined) {
+      updatedFields.sourceLink = updatedFields.sourceLink.trim();
+    }
 
     if (Object.keys(updatedFields).length === 0) {
       toast('No changes detected to save.', { icon: 'ℹ️' });
@@ -118,7 +142,7 @@ export default function EditResourcePage() {
       const response = await axiosInstance.patch(`/resources/${id}`, { updatedFields });
 
       if (response.status === 200) {
-        toast.success("Resource updated successfully", { id: saveToastId });
+        toast.success(response.data?.message || "Resource updated successfully", { id: saveToastId });
         reset(data);
         navigate("/resources");
       } else {
@@ -126,7 +150,8 @@ export default function EditResourcePage() {
       }
     } catch (error) {
       console.error('Error saving resource:', error);
-      toast.error('Failed to update resource.');
+      const serverMessage = error.response?.data?.message || error.response?.data?.error;
+      toast.error(serverMessage || 'Failed to update resource.', { id: saveToastId });
     } finally {
       setSaveStatus('idle');
     }
@@ -168,7 +193,7 @@ export default function EditResourcePage() {
 
   const filteredSuggestions = tagSuggestions.filter(tag =>
     tag.toLowerCase().includes(newTag.toLowerCase()) &&
-    !currentTags.includes(tag)
+    !(currentTags || []).includes(tag)
   );
 
 
@@ -269,7 +294,11 @@ export default function EditResourcePage() {
                   <input
                     id="name"
                     type="text"
-                    {...register('name', { required: 'Resource name is required' })}
+                    {...register('name', {
+                      required: 'Resource name is required',
+                      validate: (value) =>
+                        value.trim().length >= 5 || 'Resource name must be at least 5 characters',
+                    })}
                     className={`input ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                     placeholder="Enter a descriptive name for your resource"
                   />
@@ -281,15 +310,25 @@ export default function EditResourcePage() {
                   <label htmlFor="description" className="flex items-center gap-2 text-sm font-medium text-stone-700">
                     <FileText className="w-4 h-4 text-slate-700" />
                     <span>Description</span>
+                    <span className="text-stone-400 font-normal">(optional)</span>
                   </label>
                   <textarea
                     id="description"
-                    {...register('description', { required: 'Description is required' })}
+                    {...register('description', {
+                      validate: (value) => {
+                        if (!value || !value.trim()) return true;
+                        return value.trim().length >= 10 || 'Description must be at least 10 characters';
+                      },
+                    })}
                     rows={4}
                     className={`input resize-none ${errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                     placeholder="Describe what this resource is about and why it's useful"
                   />
-                  {errors.description && <p className="text-red-600 text-sm flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{errors.description.message}</p>}
+                  {errors.description ? (
+                    <p className="text-red-600 text-sm flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{errors.description.message}</p>
+                  ) : (
+                    <p className="text-stone-500 text-sm">At least 10 characters when provided</p>
+                  )}
                 </div>
 
                 {/* Source Link */}
@@ -302,13 +341,17 @@ export default function EditResourcePage() {
                     <input
                       id="sourceLink"
                       type="url"
-                      {...register('sourceLink', { required: 'Source Link is required' })}
+                      {...register('sourceLink', {
+                        required: 'Source Link is required',
+                        validate: (value) =>
+                          isValidUrl(value.trim()) || 'Please enter a valid URL',
+                      })}
                       className={`input pr-12 ${errors.sourceLink ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                       placeholder="https://example.com/your-resource"
                     />
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                       <a
-                        href={watch('sourceLink')}
+                        href={watch('sourceLink') || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1 text-stone-400 hover:text-slate-700 transition-colors"
@@ -325,12 +368,12 @@ export default function EditResourcePage() {
                   <label htmlFor="tags" className="flex items-center gap-2 text-sm font-medium text-stone-700">
                     <Hash className="w-4 h-4 text-slate-700" />
                     <span>Tags</span>
-                    <span className="text-stone-400 font-normal">({currentTags.length} tags)</span>
+                    <span className="text-stone-400 font-normal">({(currentTags || []).length} tags)</span>
                   </label>
 
                   {/* Current Tags */}
                   <div className="flex flex-wrap gap-2 p-4 bg-stone-50 rounded-xl border border-stone-200 min-h-[60px] items-start">
-                    {currentTags.map((tag, index) => (
+                    {(currentTags || []).map((tag, index) => (
                       <div
                         key={index}
                         className="group inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-slate-800 rounded-lg text-sm font-medium"
@@ -347,7 +390,7 @@ export default function EditResourcePage() {
                       </div>
                     ))}
 
-                    {currentTags.length === 0 && (
+                    {(currentTags || []).length === 0 && (
                       <p className="text-stone-400 text-sm italic">No tags added yet. Add some tags to categorize your resource.</p>
                     )}
                   </div>
@@ -512,7 +555,7 @@ export default function EditResourcePage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-stone-900 truncate">{resourceToDelete.name}</p>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
+                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description || 'No description yet'}</p>
                 </div>
               </div>
             </div>

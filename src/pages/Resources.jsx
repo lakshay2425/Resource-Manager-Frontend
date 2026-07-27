@@ -78,18 +78,21 @@ export default function AllResourcesPage() {
   };
 
   // Get unique categories from resources
-  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags))];
+  const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags || []))];
 
   // Filter and sort resources
   const filteredResourcesComputed = useMemo(() => {
     let filtered = resources.filter(resource => {
+      const tags = resource.tags || [];
+      const description = resource.description || '';
+
       const matchesSearch = searchTerm === '' ||
         resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+        description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesCategory = selectedCategory === 'All' ||
-        resource.tags.includes(selectedCategory);
+        tags.includes(selectedCategory);
 
       const matchesStatus = selectedStatus === 'All' ||
         resource.status.toLowerCase() === selectedStatus.toLowerCase();
@@ -384,7 +387,7 @@ export default function AllResourcesPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-stone-900 truncate">{resourceToDelete.name}</p>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description}</p>
+                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">{resourceToDelete.description || 'No description yet'}</p>
                 </div>
               </div>
             </div>
