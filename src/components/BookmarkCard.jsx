@@ -50,11 +50,10 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
   return (
     <>
       {/* Resource Card */}
-      <article className="group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg p-5 sm:p-6">
-        {/* Resource Content */}
-        <div>
+      <article className="group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg flex flex-col p-5 sm:p-6">
+        <div className="flex flex-col gap-3 min-w-0">
           {/* Category Badge and Tags */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2">
             <span className="tag tag-primary">
               <CategoryIcon category={resource?.tags?.[0] || 'general'} className="w-3 h-3" />
               <span>{resource?.tags?.[0] || 'Resource'}</span>
@@ -67,19 +66,21 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
           </div>
 
           {/* Resource Name */}
-          <h3 className="text-lg font-semibold text-stone-900 mb-2 group-hover:text-slate-700 transition-colors leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          <h3 className="text-lg font-semibold text-stone-900 group-hover:text-slate-700 transition-colors leading-snug line-clamp-2" style={{ fontFamily: 'var(--font-display)' }}>
             {resource?.name || 'Untitled Resource'}
           </h3>
 
           {/* Resource Description */}
-          <p className="text-stone-600 text-sm leading-relaxed mb-4 line-clamp-2">
-            {resource?.description || 'No description available'}
-          </p>
+          {resource?.description?.trim() && (
+            <p className="text-stone-600 text-sm leading-relaxed line-clamp-2">
+              {resource.description}
+            </p>
+          )}
 
           {/* All Tags */}
           {resource?.tags && resource.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {resource.tags.map((tag, index) => (
+            <div className="flex flex-wrap gap-1.5">
+              {resource.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
@@ -88,11 +89,17 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
                   <span>#{tag}</span>
                 </span>
               ))}
+              {resource.tags.length > 3 && (
+                <span className="inline-flex items-center px-2.5 py-1 text-xs text-stone-500">
+                  +{resource.tags.length - 3} more
+                </span>
+              )}
             </div>
           )}
+        </div>
 
-          {/* Owner Information and Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-stone-100 gap-3">
+        {/* Owner Information and Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 mt-1 border-t border-stone-100 gap-3">
             {/* Resource Owner */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
@@ -127,7 +134,6 @@ const BookmarkCard = ({ bookmark, onRemoveBookmark }) => {
                 <span>Visit</span>
                 <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
               </a>
-            </div>
           </div>
         </div>
       </article>

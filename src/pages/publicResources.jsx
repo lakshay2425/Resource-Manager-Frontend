@@ -1,11 +1,8 @@
-import { getInitials } from "../utilis/getInitials.js";
-import { getCategoryColor } from "../utilis/getCategoryColor.js"
-import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import { useState, useEffect, useContext, } from 'react';
-import { Search, Globe, X, Grid, List, Bookmark, ChevronUp, ChevronDown, ExternalLink, Loader2 } from 'lucide-react';
+import { Search, Globe, X, Grid, List, Loader2 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
-import { handleBookmark } from "../utilis/handleBookmark.js";
+import ResourceCard from "../components/ResourceCard.jsx";
 
 
 export default function PublicResourcesPage() {
@@ -97,131 +94,6 @@ export default function PublicResourcesPage() {
 
     setFilteredResources(filtered);
   }, [resources, searchTerm, selectedCategory, sortBy]);
-
-  const ResourceCard = ({ resource, isListView = false, bookMarkedResourcesId }) => {
-    const [showAllTags, setShowAllTags] = useState(false);
-    const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
-    const [isAnimating, setIsAnimating] = useState(false);
-
-
-    // Show only first 3 tags on mobile, all on larger screens
-    const visibleTags = showAllTags ? resource.tags : resource.tags.slice(0, 3);
-    const hasMoreTags = resource.tags.length > 3;
-
-    return (
-      <article className={`group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg ${isListView
-        ? 'flex flex-col sm:flex-row sm:items-center p-5 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
-        : 'p-5 sm:p-6'
-        }`}>
-
-        {/* Bookmark Button - Only visible when authenticated */}
-        {isAuthenticated && (
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, bookMarkedResourcesId.includes(resource._id), handleBookmarkChange)}
-              className={`p-2 rounded-lg transition-all duration-200 ${isBookmarked
-                ? 'bg-amber-50 text-slate-700'
-                : 'bg-stone-100 text-stone-400 hover:bg-amber-50 hover:text-slate-700'
-                }`}
-              title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
-            >
-              <Bookmark
-                className={`w-4 h-4 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'
-                  }`}
-                fill={isBookmarked ? 'currentColor' : 'none'}
-                strokeWidth={2}
-              />
-            </button>
-          </div>
-        )}
-
-        <div className={`${isListView ? 'flex-1' : ''} ${isAuthenticated ? 'pr-12' : ''}`}>
-          {/* Category Badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className={`tag tag-primary`}>
-              <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-              <span>{resource.tags[0]}</span>
-            </span>
-            {resource.tags.length > 1 && (
-              <span className="text-xs text-stone-500">
-                +{resource.tags.length - 1} more
-              </span>
-            )}
-          </div>
-
-          {/* Title - Clickable */}
-          <h3 className="text-lg font-semibold mb-2 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-            <a
-              href={resource.sourceLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-stone-900 hover:text-slate-700 transition-colors"
-            >
-              {resource.name}
-            </a>
-          </h3>
-
-          {/* Description */}
-          <p className={`text-stone-600 text-sm leading-relaxed ${isListView ? '' : 'mb-4'}`}>
-            {resource.description}
-          </p>
-        </div>
-
-        {/* All Tags */}
-        <div className={`${isListView ? 'mb-3' : 'mb-4'}`}>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {visibleTags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
-              >
-                <CategoryIcon category={tag} className="w-3 h-3" />
-                <span>#{tag}</span>
-              </span>
-            ))}
-          </div>
-
-          {/* Show More/Less button for tags on mobile */}
-          {hasMoreTags && (
-            <button
-              onClick={() => setShowAllTags(!showAllTags)}
-              className="flex items-center gap-1 text-xs text-slate-700 hover:text-slate-800 transition-colors sm:hidden"
-            >
-              <span>{showAllTags ? 'Show less' : `Show ${resource.tags.length - 3} more`}</span>
-              {showAllTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          )}
-        </div>
-
-        {/* User and Stats */}
-        <div className={`flex ${isListView
-          ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
-          : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-stone-100 space-y-3 sm:space-y-0'
-          }`}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-stone-800 truncate">{resource.email}</p>
-              <p className="text-xs text-stone-500">Community Resource</p>
-            </div>
-          </div>
-
-          {/* Visit Link */}
-          <a
-            href={resource.sourceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 group/link"
-          >
-            <span>Visit</span>
-            <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-          </a>
-        </div>
-      </article>
-    );
-  };
 
   // Loading State
   if (isLoading) {
@@ -348,7 +220,7 @@ export default function PublicResourcesPage() {
         {/* Resources Grid/List */}
         {filteredResources.length > 0 ? (
           <div className={viewMode === 'grid'
-            ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start"
             : "space-y-4"
           }>
             {filteredResources.map(resource => (
@@ -357,6 +229,9 @@ export default function PublicResourcesPage() {
                 resource={resource}
                 bookMarkedResourcesId={bookMarkedResourcesId}
                 isListView={viewMode === 'list'}
+                onBookmarkChange={handleBookmarkChange}
+                showBookmark={isAuthenticated}
+                titleAsLink
               />
             ))}
           </div>

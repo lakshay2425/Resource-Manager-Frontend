@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo, useContext } from 'react';
-import { Search, Layers, Globe, X, Bookmark, ExternalLink, Edit3, AlertTriangle, Trash2, Grid, List, Lock, Plus, Loader2 } from 'lucide-react';
+import { Search, Layers, Globe, X, AlertTriangle, Grid, List, Lock, Plus, Loader2 } from 'lucide-react';
+import ResourceCard from '../components/ResourceCard.jsx';
 import { CategoryIcon } from "../utilis/getCategoryIcon.jsx";
 import axiosInstance from "../utilis/Axios.jsx";
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from "../context/AuthContext.jsx";
 import { handleDeleteResource } from "../utilis/deleteResource.js";
-import { getCategoryColor } from "../utilis/getCategoryColor.js";
-import { getInitials } from "../utilis/getInitials.js";
-import { handleBookmark } from "../utilis/handleBookmark.js";
 
 export default function AllResourcesPage() {
   const navigate = useNavigate();
@@ -134,142 +132,6 @@ export default function AllResourcesPage() {
   };
 
   const stats = getStats();
-
-  const ResourceCard = ({ resource, isListView = false, onBookmarkChange, bookMarkedResourcesId }) => {
-    const navigate = useNavigate();
-    const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
-    const [isAnimating, setIsAnimating] = useState(false);
-
-
-    return (
-      <article className={`group relative bg-white rounded-xl border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg ${isListView
-        ? 'flex flex-col sm:flex-row sm:items-center p-5 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-6'
-        : 'p-5 sm:p-6'
-        }`}>
-
-        {/* Top Right Actions */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
-          {/* Bookmark Button */}
-          <button
-            onClick={() => handleBookmark(resource._id, setIsAnimating, setIsBookmarked, bookMarkedResourcesId.includes(resource._id), onBookmarkChange)}
-            className={`p-2 rounded-lg transition-all duration-200 ${isBookmarked
-              ? 'bg-amber-50 text-slate-700'
-              : 'bg-stone-100 text-stone-400 hover:bg-amber-50 hover:text-slate-700'
-              }`}
-            title={isBookmarked ? 'Remove bookmark' : 'Bookmark resource'}
-          >
-            <Bookmark
-              className={`w-4 h-4 transition-all duration-300 ${isAnimating ? 'scale-125' : 'scale-100'}`}
-              fill={isBookmarked ? 'currentColor' : 'none'}
-              strokeWidth={2}
-            />
-          </button>
-
-          {/* Status Badge */}
-          {resource.status === 'private' ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs font-medium">
-              <Lock className="w-3 h-3" />
-              <span className="hidden sm:inline">Private</span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-slate-800 rounded-md text-xs font-medium">
-              <Globe className="w-3 h-3" />
-              <span className="hidden sm:inline">Public</span>
-            </span>
-          )}
-        </div>
-
-        {/* Resource Content */}
-        <div className={`${isListView ? 'flex-1' : ''} pr-32 sm:pr-36`}>
-          {/* Category Badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="tag tag-primary">
-              <CategoryIcon category={resource.tags[0]} className="w-3 h-3" />
-              <span>{resource.tags[0]}</span>
-            </span>
-            {resource.tags.length > 1 && (
-              <span className="text-xs text-stone-500">
-                +{resource.tags.length - 1} more
-              </span>
-            )}
-          </div>
-
-          {/* Title */}
-          <h3 className="text-lg font-semibold text-stone-900 mb-2 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-            {resource.name}
-          </h3>
-
-          {/* Description */}
-          <p className={`text-stone-600 text-sm leading-relaxed ${isListView ? '' : 'mb-4'}`}>
-            {resource.description}
-          </p>
-        </div>
-
-        {/* All Tags */}
-        <div className={`flex flex-wrap gap-1.5 ${isListView ? 'mb-3' : 'mb-4'}`}>
-          {resource.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-600 rounded-md text-xs hover:bg-amber-50 hover:text-slate-700 transition-colors cursor-pointer"
-            >
-              <CategoryIcon category={tag} className="w-3 h-3" />
-              <span>#{tag}</span>
-            </span>
-          ))}
-        </div>
-
-        {/* User and Stats */}
-        <div className={`flex ${isListView
-          ? 'flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4'
-          : 'flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-stone-100 space-y-3 sm:space-y-0'
-          }`}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-stone-800">You</p>
-              <p className="text-xs text-stone-500">
-                {resource.status === 'private' ? 'Private Resource' : 'Public Resource'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Action Buttons */}
-            <button
-              onClick={() => navigate(`/edit/${resource._id}`, { state: { resource } })}
-              className="p-2 text-stone-400 hover:text-slate-700 hover:bg-amber-50 rounded-lg transition-colors"
-              title="Edit Resource"
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => {
-                setShowDeleteModal(true);
-                setResourceToDelete(resource);
-              }}
-              className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Delete Resource"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-
-            {/* Visit Link */}
-            <a
-              href={resource.sourceLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 group/link"
-            >
-              <span>Visit</span>
-              <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-            </a>
-          </div>
-        </div>
-      </article>
-    );
-  };
 
   // Loading State
   if (isLoading) {
@@ -426,7 +288,7 @@ export default function AllResourcesPage() {
           {filteredResources.length > 0 ? (
             <div className={
               viewMode === 'grid'
-                ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+                ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start"
                 : "space-y-4"
             }>
               {filteredResources.map(resource => (
@@ -436,6 +298,14 @@ export default function AllResourcesPage() {
                   bookMarkedResourcesId={bookMarkedResourcesId}
                   isListView={viewMode === 'list'}
                   onBookmarkChange={handleBookmarkChange}
+                  showStatus
+                  showEdit
+                  ownerName="You"
+                  ownerSubtitle={resource.status === 'private' ? 'Private Resource' : 'Public Resource'}
+                  onDelete={(resourceToRemove) => {
+                    setShowDeleteModal(true);
+                    setResourceToDelete(resourceToRemove);
+                  }}
                 />
               ))}
             </div>
