@@ -8,7 +8,29 @@ import {
   deleteAllDocuments 
 } from '../api/documentApi';
 
-const DOC_HOOK_KEY = 'documents';
+export const DOC_HOOK_KEY = 'documents';
+
+const getDocumentFromPolicyResponse = (policyData) =>
+  policyData?.document ?? policyData?.data?.document ?? null;
+
+const upsertDocumentInCache = (queryClient, newDocument) => {
+  if (!newDocument?._id) return;
+
+  queryClient.setQueryData([DOC_HOOK_KEY], (old) => {
+    const existing = old?.documents ?? [];
+    const alreadyListed = existing.some((doc) => doc._id === newDocument._id);
+    if (alreadyListed) return old;
+
+    return {
+      ...old,
+      documents: [...existing, newDocument],
+      total: (old?.total ?? existing.length) + 1,
+    };
+  });
+};
+
+const refreshDocuments = (queryClient) =>
+  queryClient.refetchQueries({ queryKey: [DOC_HOOK_KEY] });
 
 // 1. Fetch User Documents
 export const useGetDocuments = () => {
@@ -46,9 +68,10 @@ export const useUploadDocument = () => {
 
       return policyData;
     },
-    onSuccess: () => {
-      // Refresh documents
-      queryClient.invalidateQueries({ queryKey: [DOC_HOOK_KEY] });
+    onSuccess: async (policyData) => {
+      const newDocument = getDocumentFromPolicyResponse(policyData);
+      upsertDocumentInCache(queryClient, newDocument);
+      await refreshDocuments(queryClient);
     }
   });
 };
@@ -75,8 +98,17 @@ export const useDeleteDocument = () => {
       await deleteDocument(id);
       return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [DOC_HOOK_KEY] });
+    onSuccess: async (id) => {
+      queryClient.setQueryData([DOC_HOOK_KEY], (old) => {
+        const existing = old?.documents ?? [];
+        const nextDocuments = existing.filter((doc) => doc._id !== id);
+        return {
+          ...old,
+          documents: nextDocuments,
+          total: nextDocuments.length,
+        };
+      });
+      await refreshDocuments(queryClient);
     }
   });
 };
@@ -89,8 +121,9 @@ export const useDeleteAllDocuments = () => {
     mutationFn: async () => {
       await deleteAllDocuments();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [DOC_HOOK_KEY] });
+    onSuccess: async () => {
+      queryClient.setQueryData([DOC_HOOK_KEY], { documents: [], total: 0 });
+      await refreshDocuments(queryClient);
     }
   });
 };

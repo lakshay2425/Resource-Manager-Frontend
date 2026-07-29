@@ -13,7 +13,7 @@ const ALLOWED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const DocumentManagement = () => {
-  const { data, isLoading, isError } = useGetDocuments();
+  const { data, isLoading, isFetching, isError } = useGetDocuments();
   const { mutate: uploadDocument, isPending: isUploading } = useUploadDocument();
   const { mutate: viewDocument, isPending: isViewing } = useViewDocument();
   const { mutate: deleteDocument, isPending: isDeleting } = useDeleteDocument();
@@ -193,7 +193,15 @@ const DocumentManagement = () => {
 
         {/* Documents Content */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">Your Documents</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold text-gray-800">Your Documents</h2>
+            {isFetching && !isLoading && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Refreshing...
+              </span>
+            )}
+          </div>
           
           {isLoading ? (
             <div className="flex justify-center items-center py-20">
