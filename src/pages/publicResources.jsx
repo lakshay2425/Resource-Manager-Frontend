@@ -40,6 +40,11 @@ export default function PublicResourcesPage() {
 
   // Handle bookmark change - update the local state when bookmark status changes
   const handleBookmarkChange = (resourceId, isBookmarked) => {
+    setBookMarkedResourcesId((prev) =>
+      isBookmarked
+        ? prev.includes(resourceId) ? prev : [...prev, resourceId]
+        : prev.filter((id) => id !== resourceId)
+    );
     setResources(prev =>
       prev.map(r =>
         r._id === resourceId ? { ...r, isBookmarked } : r

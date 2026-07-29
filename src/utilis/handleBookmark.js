@@ -30,6 +30,7 @@ export const handleBookmark = async (resourceId, setIsAnimating, setIsBookmarked
       onBookmarkChange(resourceId, !isBookmarked);
     }
   } catch (error) {
+    setIsBookmarked(isBookmarked);
     console.error(error);
     if (error?.status === 404) return toast.error('Resource is already bookmarked');
     console.error(error.message, "Error in updating the bookmark status");

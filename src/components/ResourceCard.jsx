@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bookmark, ExternalLink, Edit3, Trash2, Globe, Lock, ChevronUp, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryIcon } from '../utilis/getCategoryIcon.jsx';
@@ -80,9 +80,14 @@ export default function ResourceCard({
   onDelete,
 }) {
   const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(bookMarkedResourcesId.includes(resource._id) || false);
+  const isBookmarkedFromParent = bookMarkedResourcesId.includes(resource._id);
+  const [isBookmarked, setIsBookmarked] = useState(isBookmarkedFromParent);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
+
+  useEffect(() => {
+    setIsBookmarked(isBookmarkedFromParent);
+  }, [isBookmarkedFromParent]);
 
   const description = resource.description?.trim();
   const primaryTag = resource.tags?.[0];
@@ -106,7 +111,7 @@ export default function ResourceCard({
                   resource._id,
                   setIsAnimating,
                   setIsBookmarked,
-                  bookMarkedResourcesId.includes(resource._id),
+                  isBookmarked,
                   onBookmarkChange
                 )
               }
