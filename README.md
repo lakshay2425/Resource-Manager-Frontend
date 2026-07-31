@@ -19,6 +19,7 @@
 - **Advanced Search**: Find resources by name, description, or tags instantly
 - **Category Filtering**: Browse resources by categories with visual icons
 - **Resource Editing**: Full edit form prefilled with existing resource values
+- Test
 
 ### 🎨 **Modern User Experience**
 
