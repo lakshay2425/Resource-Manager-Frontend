@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import { Layers, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle, ExternalLink, FileText } from 'lucide-react';
+import { Layers, Menu, X, User, LogOut, Home, Bookmark, ChevronDown, PlusCircle, ExternalLink, FileText, FolderOpen } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from 'axios';
@@ -74,10 +74,23 @@ const Navbar = () => {
       description: 'Browse public resources'
     },
     {
+      href: '/collections/public',
+      label: 'Collections',
+      icon: FolderOpen,
+      description: 'Browse public collections'
+    },
+    {
       href: '/resources',
       label: 'My Resources',
       icon: Layers,
       description: 'View and manage your resources'
+    },
+    {
+      href: '/collections',
+      label: 'My Collections',
+      icon: FolderOpen,
+      description: 'Organize resources into collections',
+      authOnly: true,
     },
     {
       href: '/bookmarks',
@@ -209,6 +222,13 @@ const Navbar = () => {
                   <ExternalLink className="w-4 h-4" />
                   <span>Explore</span>
                 </Link>
+                <Link
+                  to="/collections/public"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  <span>Collections</span>
+                </Link>
                 <button
                   onClick={() => handleGoogleLogin()}
                   className="ml-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
@@ -311,6 +331,13 @@ const Navbar = () => {
                   >
                     <ExternalLink className="w-5 h-5" />
                     Explore Resources
+                  </Link>
+                  <Link
+                    to="/collections/public"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-lg transition-colors"
+                  >
+                    <FolderOpen className="w-5 h-5" />
+                    Public Collections
                   </Link>
                   <button
                     onClick={() => handleGoogleLogin()}

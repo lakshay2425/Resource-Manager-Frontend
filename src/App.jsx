@@ -16,6 +16,10 @@ const Spinner = lazy(()=> import("./components/LoadingBar.jsx"))
 const LoadingScreen = lazy(()=> import("./components/LoadingScreen.jsx"))
 const Bookmark = lazy(()=> import("./pages/BookmarkResources.jsx"))
 const DocumentManagement = lazy(()=> import("./pages/DocumentManagement.jsx"))
+const MyCollections = lazy(()=> import("./pages/MyCollections.jsx"))
+const PublicCollections = lazy(()=> import("./pages/PublicCollections.jsx"))
+const CreateCollection = lazy(()=> import("./pages/CreateCollection.jsx"))
+const CollectionDetail = lazy(()=> import("./pages/CollectionDetail.jsx"))
 
 function App() {
   useEffect(() => {
@@ -98,6 +102,24 @@ function App() {
             />
           }
           />
+          <Route path="/collections/public" element={<PublicCollections />} />
+          <Route path="/collections/new" element={
+            <RenderProtectedRoute
+            condition={isAuthenticated}
+            renderPage={<CreateCollection />}
+            fallback='/'
+            errorMessage='You need to login to access this page'
+            />
+          } />
+          <Route path="/collections/:id" element={<CollectionDetail />} />
+          <Route path="/collections" element={
+            <RenderProtectedRoute
+            condition={isAuthenticated}
+            renderPage={<MyCollections />}
+            fallback='/'
+            errorMessage='You need to login to access this page'
+            />
+          } />
           <Route path='*' element={<NotFound/>}/>
       </Routes>
       </Suspense>
