@@ -90,17 +90,17 @@ export default function CreateCollection() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to="/collections" className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 mb-6">
-          <ArrowLeft className="w-4 h-4" />
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+        <Link to="/collections" className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 mb-4 sm:mb-6">
+          <ArrowLeft className="w-4 h-4 shrink-0" />
           Back to My Collections
         </Link>
 
-        <div className="bg-white rounded-xl border border-stone-200 p-6 sm:p-8">
-          <h1 className="text-2xl font-bold text-stone-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="bg-white rounded-xl border border-stone-200 p-4 sm:p-8">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900 mb-2" style={{ fontFamily: 'var(--font-display)' }}>
             Create Collection
           </h1>
-          <p className="text-stone-600 text-sm mb-8">
+          <p className="text-stone-600 text-sm mb-6 sm:mb-8">
             Status labels are set now and cannot be changed later. Choose labels that match your workflow.
           </p>
 
@@ -159,7 +159,7 @@ export default function CreateCollection() {
                 ))}
               </div>
               {itemStatuses.length < MAX_STATUSES && (
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={statusInput}
@@ -170,10 +170,10 @@ export default function CreateCollection() {
                         addStatus();
                       }
                     }}
-                    className="input flex-1"
+                    className="input flex-1 w-full"
                     placeholder="Add a status label"
                   />
-                  <button type="button" onClick={addStatus} className="btn-secondary shrink-0">
+                  <button type="button" onClick={addStatus} className="btn-secondary shrink-0 w-full sm:w-auto justify-center">
                     <Plus className="w-4 h-4" />
                     Add
                   </button>
@@ -181,11 +181,11 @@ export default function CreateCollection() {
               )}
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Link to="/collections" className="flex-1 btn-secondary text-center">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+              <Link to="/collections" className="flex-1 btn-secondary text-center justify-center">
                 Cancel
               </Link>
-              <button type="submit" className="flex-1 btn-primary" disabled={isSubmitting}>
+              <button type="submit" className="flex-1 btn-primary justify-center" disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Collection'}
               </button>
             </div>

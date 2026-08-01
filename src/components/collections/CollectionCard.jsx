@@ -7,7 +7,7 @@ export default function CollectionCard({ collection, showOwner = false }) {
   return (
     <Link
       to={`/collections/${collection.id}`}
-      className="group block bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 p-5 sm:p-6"
+      className="group block bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6 active:bg-stone-50"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
@@ -40,7 +40,7 @@ export default function CollectionCard({ collection, showOwner = false }) {
           {collection.item_count ?? 0} items
         </span>
         {collection.item_statuses?.length > 0 && (
-          <span className="truncate">
+          <span className="break-words line-clamp-2 sm:line-clamp-1 sm:truncate">
             · {collection.item_statuses.slice(0, 3).join(', ')}
             {collection.item_statuses.length > 3 ? '…' : ''}
           </span>

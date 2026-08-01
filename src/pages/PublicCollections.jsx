@@ -31,13 +31,13 @@ export default function PublicCollections() {
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="bg-white border-b border-stone-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-display)' }}>
                 Public Collections
               </h1>
-              <p className="text-stone-600 mt-1">Discover curated resource lists shared by the community.</p>
+              <p className="text-stone-600 mt-1 text-sm sm:text-base">Discover curated resource lists shared by the community.</p>
             </div>
             {isFetching && !isLoading && (
               <span className="text-xs text-stone-500 inline-flex items-center gap-1">
@@ -48,9 +48,9 @@ export default function PublicCollections() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         {collections.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-stone-200">
+          <div className="text-center py-12 sm:py-16 px-4 bg-white rounded-xl border border-stone-200">
             <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="w-8 h-8 text-stone-400" />
             </div>
@@ -60,7 +60,7 @@ export default function PublicCollections() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
             {collections.map((collection) => (
               <CollectionCard key={collection.id} collection={collection} showOwner />
             ))}

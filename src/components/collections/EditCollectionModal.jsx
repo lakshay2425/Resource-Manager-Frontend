@@ -30,13 +30,16 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 sm:p-8"
+        className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-lg w-full p-5 sm:p-8 max-h-[92dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-stone-900" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="flex items-center justify-between mb-5 sm:mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-stone-900" style={{ fontFamily: 'var(--font-display)' }}>
             Edit Collection
           </h3>
           <button type="button" onClick={onClose} className="p-2 text-stone-400 hover:text-stone-600 rounded-lg">
@@ -51,7 +54,7 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="input"
+              className="input w-full"
               required
             />
           </div>
@@ -62,24 +65,24 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="input resize-none"
+              className="input resize-none w-full"
               placeholder="Optional description"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1.5">Visibility</label>
-            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="input">
+            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="input w-full">
               <option value="private">Private</option>
               <option value="public">Public</option>
             </select>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 btn-secondary" disabled={isSaving}>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 btn-secondary justify-center" disabled={isSaving}>
               Cancel
             </button>
-            <button type="submit" className="flex-1 btn-primary" disabled={isSaving}>
+            <button type="submit" className="flex-1 btn-primary justify-center" disabled={isSaving}>
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save changes'}
             </button>
           </div>
