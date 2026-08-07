@@ -29,7 +29,7 @@ import {
   useReorderCollectionItems,
 } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
-import { getCollectionPath, getResourceId, isValidSlug, isValidUsername } from '../utilis/collectionUrls.js';
+import { getCollectionPath, getResourceId } from '../utilis/collectionUrls.js';
 
 export default function CollectionDetail() {
   const { username, slug } = useParams();
@@ -44,12 +44,9 @@ export default function CollectionDetail() {
   const [removingItemId, setRemovingItemId] = useState(null);
   const dragItemIdRef = useRef(null);
 
-  const routeValid = isValidUsername(username) && isValidSlug(slug);
   const detailQueryKey = collectionKeys.detail(username, slug);
 
-  const { data: collection, isLoading, isError, error, refetch } = useCollectionBySlug(username, slug, {
-    enabled: routeValid,
-  });
+  const { data: collection, isLoading, isError, error, refetch } = useCollectionBySlug(username, slug);
 
   const { data: myCollections = [] } = useMyCollections({
     enabled: isAuthenticated,
@@ -222,18 +219,6 @@ export default function CollectionDetail() {
       toast.error(getCollectionErrorMessage(err, 'Failed to reorder items.'));
     }
   };
-
-  if (!routeValid) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-stone-600">Invalid collection URL.</p>
-          <Link to="/collections/public" className="btn-primary inline-flex mt-4">Browse collections</Link>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
