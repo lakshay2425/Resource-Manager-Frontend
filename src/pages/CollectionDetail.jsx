@@ -30,6 +30,8 @@ import {
 } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
 import { getCollectionPath, getResourceId, formatUsernameForUrl } from '../utilis/collectionUrls.js';
+import { usePageSeo } from '../hooks/usePageSeo.js';
+import { buildPageTitle, getCollectionJsonLd, SITE_NAME } from '../utilis/seo.js';
 
 export default function CollectionDetail() {
   const { username, slug } = useParams();
@@ -58,6 +60,29 @@ export default function CollectionDetail() {
     if (!isAuthenticated || !collection) return false;
     return myCollections.some((c) => c.id === collection.id);
   }, [isAuthenticated, myCollections, collection]);
+
+  const collectionSeoPath = username && slug
+    ? getCollectionPath(formatUsernameForUrl(username), slug)
+    : '/collections/public';
+
+  const collectionSeo = useMemo(() => {
+    if (!collection) return null;
+
+    const isPublic = collection.visibility === 'public';
+    const description =
+      collection.description?.trim() ||
+      `Browse ${collection.name}, a curated resource collection on ${SITE_NAME}.`;
+
+    return {
+      title: buildPageTitle(collection.name, `${SITE_NAME} Collections`),
+      description,
+      path: collectionSeoPath,
+      noindex: !isPublic,
+      jsonLd: isPublic ? getCollectionJsonLd(collection, collectionSeoPath) : null,
+    };
+  }, [collection, collectionSeoPath]);
+
+  usePageSeo(collectionSeo);
 
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } = useUpdateCollection();
   const { mutateAsync: deleteCollection, isPending: isDeletingCollection } = useDeleteCollection();

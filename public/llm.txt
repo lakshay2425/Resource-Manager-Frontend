@@ -1,0 +1,44 @@
+# ResourceHub
+
+> ResourceHub is a web application for saving, organizing, searching, and sharing valuable resource links. Users can keep private libraries, publish public resources, and build curated public collections with optional workflow statuses.
+
+Site: https://resources.lakshaymahajan.com
+
+## Public pages (indexable)
+
+- [Home](https://resources.lakshaymahajan.com/): Product landing page — save links, organize with tags, share publicly or keep private.
+- [Public Resources](https://resources.lakshaymahajan.com/publicResources): Community-shared resource links browsable without login.
+- [Public Collections](https://resources.lakshaymahajan.com/collections/public): Community-curated ordered lists of resources.
+- [Public Collection Detail](https://resources.lakshaymahajan.com/collections/{username}/{slug}): Individual public collection pages (dynamic URLs).
+
+## Authentication-required pages (not for indexing)
+
+- /resources — user's private and public resource library
+- /bookmarks — saved bookmarks
+- /createResource — create a resource
+- /edit/:id — edit a resource
+- /documents — document management
+- /collections — user's private collections
+- /collections/new — create a collection
+
+## Core features
+
+- Google OAuth login
+- Fast resource create (name + URL), enrich later with description, tags, visibility
+- Public resource discovery and search
+- Collections with optional status labels (e.g. todo, done)
+- Bookmarks and document uploads (authenticated)
+
+## API dependencies
+
+- Backend API: configured via VITE_BACKEND_URL (resource CRUD, collections, bookmarks, documents)
+- Auth service: configured via VITE_AUTH_URL (Google OAuth)
+
+## Sitemap
+
+https://resources.lakshaymahajan.com/sitemap.xml
+
+## Contact / source
+
+- Repository: resourceManager-frontend (ResourceHub frontend)
+- License: MIT

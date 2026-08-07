@@ -3,9 +3,13 @@ import { Search, Globe, X, Grid, List, Loader2 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import ResourceCard from "../components/ResourceCard.jsx";
+import { usePageSeo } from '../hooks/usePageSeo.js';
+import { PUBLIC_ROUTES } from '../utilis/seo.js';
 
 
 export default function PublicResourcesPage() {
+  usePageSeo(PUBLIC_ROUTES.publicResources);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('recent');

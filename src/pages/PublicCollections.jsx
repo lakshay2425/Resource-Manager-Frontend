@@ -3,8 +3,12 @@ import { FolderOpen, Loader2, AlertCircle } from 'lucide-react';
 import CollectionCard from '../components/collections/CollectionCard.jsx';
 import { usePublicCollections } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
+import { usePageSeo } from '../hooks/usePageSeo.js';
+import { PUBLIC_ROUTES } from '../utilis/seo.js';
 
 export default function PublicCollections() {
+  usePageSeo(PUBLIC_ROUTES.publicCollections);
+
   const { data: collections = [], isLoading, isError, error, refetch, isFetching } = usePublicCollections();
 
   if (isLoading) {

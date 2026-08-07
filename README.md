@@ -219,8 +219,10 @@ src/
 
 public/
 ├── resourceManagerLogo.png # Application logo
-├── robots.txt             # SEO robots file
-└── sitemap.xml           # SEO sitemap
+├── health                  # Docker / load-balancer health check (JSON)
+├── llm.txt                 # LLM / AI crawler site summary
+├── robots.txt              # Search engine crawl rules
+└── sitemap.xml             # Static public URL sitemap
 
 Docker/
 └── Dockerfile            # Multi-stage Docker configuration
@@ -317,6 +319,43 @@ ResourceHub uses a modern, glassmorphism-inspired design with:
 - **Animations**: Subtle hover effects, smooth transitions, and micro-interactions
 - **Responsive**: Mobile-first design with breakpoint optimization
 - **Accessibility**: Focus states and keyboard navigation support
+
+## 🔍 SEO & Discoverability
+
+ResourceHub ships with first-class SEO for **public pages** and blocks indexing of authenticated areas.
+
+### Public indexable routes
+
+| Route | Page | Meta tags |
+| ----- | ---- | --------- |
+| `/` | Landing | Title, description, Open Graph, Twitter Card, WebSite JSON-LD |
+| `/publicResources` | Community resources | Per-page title & description |
+| `/collections/public` | Public collections browse | Per-page title & description |
+| `/collections/:username/:slug` | Public collection detail | Dynamic title, description, CollectionPage JSON-LD; `noindex` when private |
+
+Per-route metadata is applied at runtime via `usePageSeo` (`src/hooks/usePageSeo.js`) and `src/utilis/seo.js`.
+
+Set `VITE_FRONTEND_URL` in `.env` so canonical URLs, Open Graph links, and sitemap entries match your deployment domain.
+
+### Static SEO files (`public/`)
+
+| File | URL | Purpose |
+| ---- | --- | ------- |
+| `sitemap.xml` | `/sitemap.xml` | Static sitemap for public landing pages |
+| `robots.txt` | `/robots.txt` | Allow public routes; disallow auth-only paths |
+| `llm.txt` | `/llm.txt` | Machine-readable site summary for LLM crawlers |
+| `health` | `/health` | JSON health check for Docker / probes |
+
+### Crawl rules (`robots.txt`)
+
+- **Allowed**: `/`, `/publicResources`, `/collections/public`, `/collections/*/*` (public collection detail)
+- **Disallowed**: `/resources`, `/bookmarks`, `/createResource`, `/edit/`, `/documents`, `/collections/new`, `/collections` (owner list)
+
+Dynamic public collection URLs are discoverable via on-page links and client-side meta tags; add them to `sitemap.xml` manually or via a build-time script if you need full sitemap coverage.
+
+### Notes for SPAs
+
+Search engines that execute JavaScript will read updated `<title>`, meta, and JSON-LD after navigation. The base tags in `index.html` provide a fallback for the home page before hydration.
 
 ## 🔧 Configuration
 

@@ -1,15 +1,20 @@
-User-agent: *
+# ResourceHub — https://resources.lakshaymahajan.com
 
+User-agent: *
 Allow: /
 Allow: /publicResources
+Allow: /collections/public
+Allow: /collections/*/*
 
 Disallow: /resources
-Disallow: /edit/
+Disallow: /bookmarks
 Disallow: /createResource
+Disallow: /edit/
+Disallow: /documents
+Disallow: /collections/new
+Disallow: /collections
 
-
+# LLM / AI discovery
+# See https://resources.lakshaymahajan.com/llm.txt
 
 Sitemap: https://resources.lakshaymahajan.com/sitemap.xml
-
-# Optional: Crawl delay (seconds between requests)
-Crawl-delay: 1

@@ -1,8 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { Home, ArrowLeft, Layers, Search } from 'lucide-react';
+import { usePageSeo } from '../hooks/usePageSeo.js';
 
 const NotFound = () => {
   const navigate = useNavigate();
+
+  usePageSeo({
+    title: 'Page Not Found | ResourceHub',
+    description: 'The page you requested could not be found on ResourceHub.',
+    path: '/404',
+    noindex: true,
+  });
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
