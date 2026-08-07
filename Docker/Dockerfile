@@ -34,6 +34,10 @@ USER appuser
 # Expose port (typically 3000 for serve, but can be configured)
 EXPOSE 3000
 
+# Health check — static /health file is copied into dist at build time
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+
 # Install serve globally to serve the static files
 USER root
 RUN npm install -g serve
