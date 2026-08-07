@@ -87,6 +87,14 @@ export default function CollectionDetail() {
     );
   }, [collection?.items]);
 
+  const existingResourceIds = useMemo(() => {
+    return new Set(
+      sortedItems
+        .map((item) => item.resource_id ?? item.resource?._id)
+        .filter(Boolean)
+    );
+  }, [sortedItems]);
+
   const handleStatusChange = async (itemId, status) => {
     setUpdatingItemId(itemId);
     try {
@@ -312,9 +320,9 @@ export default function CollectionDetail() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-3 sm:space-y-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         {isReordering && (
-          <p className="text-xs text-stone-500 inline-flex items-center gap-1">
+          <p className="text-xs text-stone-500 inline-flex items-center gap-1 mb-4">
             <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving order…
           </p>
         )}
@@ -330,25 +338,27 @@ export default function CollectionDetail() {
             )}
           </div>
         ) : (
-          sortedItems.map((item, index) => (
-            <CollectionItemRow
-              key={item.id}
-              item={item}
-              itemStatuses={collection.item_statuses}
-              isOwner={isOwner}
-              isFirst={index === 0}
-              isLast={index === sortedItems.length - 1}
-              onStatusChange={handleStatusChange}
-              onRemove={handleRemoveItem}
-              onMoveUp={() => handleMoveItem(item.id, 'up')}
-              onMoveDown={() => handleMoveItem(item.id, 'down')}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              isUpdating={updatingItemId === item.id || isReordering}
-              isRemoving={removingItemId === item.id}
-            />
-          ))
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+            {sortedItems.map((item, index) => (
+              <CollectionItemRow
+                key={item.id}
+                item={item}
+                itemStatuses={collection.item_statuses}
+                isOwner={isOwner}
+                isFirst={index === 0}
+                isLast={index === sortedItems.length - 1}
+                onStatusChange={handleStatusChange}
+                onRemove={handleRemoveItem}
+                onMoveUp={() => handleMoveItem(item.id, 'up')}
+                onMoveDown={() => handleMoveItem(item.id, 'down')}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                isUpdating={updatingItemId === item.id || isReordering}
+                isRemoving={removingItemId === item.id}
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -364,6 +374,7 @@ export default function CollectionDetail() {
       {showAddModal && (
         <AddItemModal
           resources={resources}
+          existingResourceIds={existingResourceIds}
           itemStatuses={collection.item_statuses}
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddItem}

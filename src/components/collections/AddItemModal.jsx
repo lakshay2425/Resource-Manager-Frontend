@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Loader2, Search } from 'lucide-react';
 import { newItemIdempotencyKey } from '../../utilis/idempotency.js';
 
 export default function AddItemModal({
   resources,
+  existingResourceIds = new Set(),
   itemStatuses,
   onClose,
   onAdd,
@@ -14,14 +15,26 @@ export default function AddItemModal({
   const [status, setStatus] = useState(itemStatuses[0] ?? '');
   const [idempotencyKey] = useState(() => newItemIdempotencyKey());
 
-  const filteredResources = resources.filter((resource) => {
+  const availableResources = useMemo(
+    () => resources.filter((resource) => !existingResourceIds.has(resource._id)),
+    [resources, existingResourceIds]
+  );
+
+  const filteredResources = useMemo(() => {
     const term = search.toLowerCase();
-    return (
-      resource.name?.toLowerCase().includes(term) ||
-      resource.description?.toLowerCase().includes(term) ||
-      resource.tags?.some((tag) => tag.toLowerCase().includes(term))
+    return availableResources.filter(
+      (resource) =>
+        resource.name?.toLowerCase().includes(term) ||
+        resource.description?.toLowerCase().includes(term) ||
+        resource.tags?.some((tag) => tag.toLowerCase().includes(term))
     );
-  });
+  }, [availableResources, search]);
+
+  useEffect(() => {
+    if (selectedResourceId && !filteredResources.some((r) => r._id === selectedResourceId)) {
+      setSelectedResourceId('');
+    }
+  }, [filteredResources, selectedResourceId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,6 +46,11 @@ export default function AddItemModal({
       idempotency_key: idempotencyKey,
     });
   };
+
+  const emptyMessage =
+    availableResources.length === 0
+      ? 'All your resources are already in this collection.'
+      : 'No resources match your search.';
 
   return (
     <div
@@ -61,6 +79,7 @@ export default function AddItemModal({
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search your resources..."
               className="input pl-10 w-full"
+              disabled={availableResources.length === 0}
             />
           </div>
 
@@ -71,6 +90,7 @@ export default function AddItemModal({
               onChange={(e) => setSelectedResourceId(e.target.value)}
               className="input w-full"
               required
+              disabled={availableResources.length === 0}
             >
               <option value="">Select a resource</option>
               {filteredResources.map((resource) => (
@@ -80,7 +100,7 @@ export default function AddItemModal({
               ))}
             </select>
             {filteredResources.length === 0 && (
-              <p className="text-xs text-stone-500 mt-2">No resources match your search.</p>
+              <p className="text-xs text-stone-500 mt-2">{emptyMessage}</p>
             )}
           </div>
 
@@ -102,7 +122,7 @@ export default function AddItemModal({
             <button
               type="submit"
               className="flex-1 btn-primary justify-center"
-              disabled={isAdding || !selectedResourceId}
+              disabled={isAdding || !selectedResourceId || availableResources.length === 0}
             >
               {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add to collection'}
             </button>
