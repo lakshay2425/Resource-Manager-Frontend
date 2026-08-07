@@ -18,7 +18,8 @@ import CollectionItemRow from '../components/collections/CollectionItemRow.jsx';
 import EditCollectionModal from '../components/collections/EditCollectionModal.jsx';
 import AddItemModal from '../components/collections/AddItemModal.jsx';
 import {
-  useCollection,
+  collectionKeys,
+  useCollectionBySlug,
   useMyCollections,
   useUpdateCollection,
   useDeleteCollection,
@@ -28,10 +29,10 @@ import {
   useReorderCollectionItems,
 } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
-import { isValidUuid } from '../utilis/idempotency.js';
+import { getCollectionPath, getResourceId, isValidSlug, isValidUsername } from '../utilis/collectionUrls.js';
 
 export default function CollectionDetail() {
-  const { id } = useParams();
+  const { username, slug } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
 
@@ -43,27 +44,30 @@ export default function CollectionDetail() {
   const [removingItemId, setRemovingItemId] = useState(null);
   const dragItemIdRef = useRef(null);
 
-  const validId = isValidUuid(id);
+  const routeValid = isValidUsername(username) && isValidSlug(slug);
+  const detailQueryKey = collectionKeys.detail(username, slug);
 
-  const { data: collection, isLoading, isError, error, refetch } = useCollection(id, {
-    enabled: validId,
+  const { data: collection, isLoading, isError, error, refetch } = useCollectionBySlug(username, slug, {
+    enabled: routeValid,
   });
 
   const { data: myCollections = [] } = useMyCollections({
     enabled: isAuthenticated,
   });
 
-  const isOwner = useMemo(
-    () => isAuthenticated && myCollections.some((c) => c.id === id),
-    [isAuthenticated, myCollections, id]
-  );
+  const collectionId = collection?.id;
+
+  const isOwner = useMemo(() => {
+    if (!isAuthenticated || !collection) return false;
+    return myCollections.some((c) => c.id === collection.id);
+  }, [isAuthenticated, myCollections, collection]);
 
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } = useUpdateCollection();
   const { mutateAsync: deleteCollection, isPending: isDeletingCollection } = useDeleteCollection();
-  const { mutateAsync: addItem, isPending: isAddingItem } = useAddCollectionItem(id);
-  const { mutateAsync: updateItemStatus } = useUpdateCollectionItemStatus(id);
-  const { mutateAsync: removeItem } = useDeleteCollectionItem(id);
-  const { mutateAsync: reorderItems, isPending: isReordering } = useReorderCollectionItems(id);
+  const { mutateAsync: addItem, isPending: isAddingItem } = useAddCollectionItem(collectionId, detailQueryKey);
+  const { mutateAsync: updateItemStatus } = useUpdateCollectionItemStatus(collectionId, detailQueryKey);
+  const { mutateAsync: removeItem } = useDeleteCollectionItem(collectionId, detailQueryKey);
+  const { mutateAsync: reorderItems, isPending: isReordering } = useReorderCollectionItems(collectionId, detailQueryKey);
 
   useEffect(() => {
     if (!isOwner) return;
@@ -90,10 +94,12 @@ export default function CollectionDetail() {
   const existingResourceIds = useMemo(() => {
     return new Set(
       sortedItems
-        .map((item) => item.resource_id ?? item.resource?._id)
+        .map((item) => item.resource_id ?? getResourceId(item.resource))
         .filter(Boolean)
     );
   }, [sortedItems]);
+
+  const itemStatuses = collection?.item_statuses ?? [];
 
   const handleStatusChange = async (itemId, status) => {
     setUpdatingItemId(itemId);
@@ -135,18 +141,33 @@ export default function CollectionDetail() {
   };
 
   const handleSaveCollection = async (payload) => {
+    if (!collectionId) return;
+
     try {
-      await updateCollection({ id, payload });
+      const updated = await updateCollection({
+        id: collectionId,
+        payload,
+        detailQueryKey,
+      });
       toast.success('Collection updated.');
       setShowEditModal(false);
+
+      const ownerUsername = updated?.owner?.username ?? collection.owner?.username ?? username;
+      const nextSlug = updated?.slug ?? collection.slug;
+
+      if (payload.slug && nextSlug !== slug && ownerUsername) {
+        navigate(getCollectionPath(ownerUsername, nextSlug), { replace: true });
+      }
     } catch (err) {
       toast.error(getCollectionErrorMessage(err, 'Failed to update collection.'));
     }
   };
 
   const handleDeleteCollection = async () => {
+    if (!collectionId) return;
+
     try {
-      await deleteCollection(id);
+      await deleteCollection({ id: collectionId, detailQueryKey });
       toast.success('Collection deleted.');
       navigate('/collections');
     } catch (err) {
@@ -202,12 +223,12 @@ export default function CollectionDetail() {
     }
   };
 
-  if (!validId) {
+  if (!routeValid) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-stone-600">Invalid collection ID.</p>
+          <p className="text-stone-600">Invalid collection URL.</p>
           <Link to="/collections/public" className="btn-primary inline-flex mt-4">Browse collections</Link>
         </div>
       </div>
@@ -243,6 +264,7 @@ export default function CollectionDetail() {
   }
 
   const isPublic = collection.visibility === 'public';
+  const shareUsername = collection.owner?.username ?? username;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -270,6 +292,11 @@ export default function CollectionDetail() {
                 <span className="text-xs text-stone-500">
                   {sortedItems.length} item{sortedItems.length !== 1 ? 's' : ''}
                 </span>
+                {shareUsername && collection.slug && (
+                  <span className="text-xs text-stone-400 truncate">
+                    /collections/{shareUsername}/{collection.slug}
+                  </span>
+                )}
               </div>
               <h1 className="text-xl sm:text-3xl font-bold text-stone-900 break-words" style={{ fontFamily: 'var(--font-display)' }}>
                 {collection.name}
@@ -277,9 +304,17 @@ export default function CollectionDetail() {
               {collection.description?.trim() && (
                 <p className="text-stone-600 mt-2 text-sm sm:text-base break-words">{collection.description}</p>
               )}
-              {collection.item_statuses?.length > 0 && (
+              {!isOwner && collection.owner?.name && (
+                <p className="text-sm text-stone-500 mt-2">
+                  by{' '}
+                  <span className="font-medium text-stone-700">
+                    {collection.owner.username ? `@${collection.owner.username}` : collection.owner.name}
+                  </span>
+                </p>
+              )}
+              {itemStatuses.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4">
-                  {collection.item_statuses.map((status) => (
+                  {itemStatuses.map((status) => (
                     <span key={status} className="px-2.5 py-1 bg-indigo-50 text-indigo-800 rounded-md text-xs font-medium">
                       {status}
                     </span>
@@ -343,7 +378,7 @@ export default function CollectionDetail() {
               <CollectionItemRow
                 key={item.id}
                 item={item}
-                itemStatuses={collection.item_statuses}
+                itemStatuses={itemStatuses}
                 isOwner={isOwner}
                 isFirst={index === 0}
                 isLast={index === sortedItems.length - 1}
@@ -375,7 +410,7 @@ export default function CollectionDetail() {
         <AddItemModal
           resources={resources}
           existingResourceIds={existingResourceIds}
-          itemStatuses={collection.item_statuses}
+          itemStatuses={itemStatuses}
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddItem}
           isAdding={isAddingItem}

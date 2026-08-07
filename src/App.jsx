@@ -111,7 +111,7 @@ function App() {
             errorMessage='You need to login to access this page'
             />
           } />
-          <Route path="/collections/:id" element={<CollectionDetail />} />
+          <Route path="/collections/:username/:slug" element={<CollectionDetail />} />
           <Route path="/collections" element={
             <RenderProtectedRoute
             condition={isAuthenticated}

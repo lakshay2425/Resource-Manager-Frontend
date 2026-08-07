@@ -3,9 +3,15 @@ import { FolderOpen, Plus, Loader2, AlertCircle } from 'lucide-react';
 import CollectionCard from '../components/collections/CollectionCard.jsx';
 import { useMyCollections } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext.jsx';
+import { useLocalStorageState } from '../hooks/useLocalStorage.js';
 
 export default function MyCollections() {
   const { data: collections = [], isLoading, isError, error, refetch, isFetching } = useMyCollections();
+  const { username: authUsername } = useContext(AuthContext);
+  const [userInfo] = useLocalStorageState('userInfo', null);
+  const ownerUsername = authUsername || userInfo?.username;
 
   if (isLoading) {
     return (
@@ -76,7 +82,7 @@ export default function MyCollections() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
             {collections.map((collection) => (
-              <CollectionCard key={collection.id} collection={collection} />
+              <CollectionCard key={collection.id} collection={collection} ownerUsername={ownerUsername} />
             ))}
           </div>
         )}

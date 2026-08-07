@@ -15,6 +15,13 @@ export const getCollectionErrorMessage = (error, fallback = 'Something went wron
     return message || 'Collection not found.';
   }
   if (status === 409) {
+    const lower = (message ?? '').toLowerCase();
+    if (lower.includes('slug')) {
+      return 'This URL is already in use.';
+    }
+    if (lower.includes('username')) {
+      return 'Username already taken.';
+    }
     return message || 'This action conflicts with existing data.';
   }
   if (status === 429) {

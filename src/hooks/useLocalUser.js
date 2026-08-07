@@ -3,6 +3,6 @@ import { ensureLocalUser } from '../api/usersApi';
 
 export const useEnsureLocalUser = () => {
   return useMutation({
-    mutationFn: (name) => ensureLocalUser(name),
+    mutationFn: ({ name, username }) => ensureLocalUser({ name, username }),
   });
 };

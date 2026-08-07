@@ -7,6 +7,7 @@ import { useEnsureLocalUser } from '../hooks/useLocalUser.js';
 import { newCollectionIdempotencyKey } from '../utilis/idempotency.js';
 import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
+import { getCollectionPath } from '../utilis/collectionUrls.js';
 
 const MAX_STATUSES = 5;
 
@@ -19,7 +20,8 @@ export default function CreateCollection() {
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState('private');
   const [statusInput, setStatusInput] = useState('');
-  const [itemStatuses, setItemStatuses] = useState(['To Read', 'Reading', 'Done']);
+  const [itemStatuses, setItemStatuses] = useState([]);
+  const [useStatuses, setUseStatuses] = useState(false);
 
   const { mutateAsync: ensureUser, isPending: isEnsuringUser } = useEnsureLocalUser();
   const { mutateAsync: createCollection, isPending: isCreating } = useCreateCollection();
@@ -40,10 +42,6 @@ export default function CreateCollection() {
   };
 
   const removeStatus = (status) => {
-    if (itemStatuses.length <= 1) {
-      toast.error('At least one status label is required.');
-      return;
-    }
     setItemStatuses((prev) => prev.filter((s) => s !== status));
   };
 
@@ -57,20 +55,27 @@ export default function CreateCollection() {
     }
 
     const cleanedStatuses = itemStatuses.map((s) => s.trim()).filter(Boolean);
-    if (cleanedStatuses.length < 1 || cleanedStatuses.length > MAX_STATUSES) {
-      toast.error('Add between 1 and 5 non-empty status labels.');
+    if (useStatuses && (cleanedStatuses.length < 1 || cleanedStatuses.length > MAX_STATUSES)) {
+      toast.error('Add between 1 and 5 non-empty status labels, or turn off workflow statuses.');
+      return;
+    }
+
+    const username = userInfo?.username;
+    const displayName = userInfo?.name || username || 'ResourceHub User';
+
+    if (!username) {
+      toast.error('Username is missing. Please log out and sign in again.');
       return;
     }
 
     try {
-      const displayName = userInfo?.name || userInfo?.username || 'ResourceHub User';
-      await ensureUser(displayName);
+      await ensureUser({ name: displayName, username });
 
       const result = await createCollection({
         name: trimmedName,
         description: description.trim() || undefined,
         visibility,
-        item_statuses: cleanedStatuses,
+        item_statuses: useStatuses && cleanedStatuses.length > 0 ? cleanedStatuses : null,
         idempotency_key: idempotencyKeyRef.current,
       });
 
@@ -80,7 +85,12 @@ export default function CreateCollection() {
         toast.success('Collection created!');
       }
 
-      navigate(`/collections/${result.collection.id}`);
+      const { slug } = result.collection;
+      if (slug) {
+        navigate(getCollectionPath(username, slug));
+      } else {
+        navigate('/collections');
+      }
     } catch (error) {
       toast.error(getCollectionErrorMessage(error, 'Failed to create collection.'));
     }
@@ -101,7 +111,7 @@ export default function CreateCollection() {
             Create Collection
           </h1>
           <p className="text-stone-600 text-sm mb-6 sm:mb-8">
-            Status labels are set now and cannot be changed later. Choose labels that match your workflow.
+            Group resources into an ordered list. Workflow statuses are optional and cannot be changed later.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -137,47 +147,59 @@ export default function CreateCollection() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                Item statuses * <span className="text-stone-400 font-normal">(1–5, fixed after create)</span>
+              <label className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-3">
+                <input
+                  type="checkbox"
+                  checked={useStatuses}
+                  onChange={(e) => setUseStatuses(e.target.checked)}
+                  className="rounded border-stone-300"
+                />
+                Add workflow statuses
+                <span className="text-stone-400 font-normal">(optional, 1–5 labels, fixed after create)</span>
               </label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {itemStatuses.map((status) => (
-                  <span
-                    key={status}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 text-stone-700 rounded-lg text-sm"
-                  >
-                    {status}
-                    <button
-                      type="button"
-                      onClick={() => removeStatus(status)}
-                      className="text-stone-400 hover:text-red-600"
-                      aria-label={`Remove ${status}`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              {itemStatuses.length < MAX_STATUSES && (
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    value={statusInput}
-                    onChange={(e) => setStatusInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addStatus();
-                      }
-                    }}
-                    className="input flex-1 w-full"
-                    placeholder="Add a status label"
-                  />
-                  <button type="button" onClick={addStatus} className="btn-secondary shrink-0 w-full sm:w-auto justify-center">
-                    <Plus className="w-4 h-4" />
-                    Add
-                  </button>
-                </div>
+
+              {useStatuses && (
+                <>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {itemStatuses.map((status) => (
+                      <span
+                        key={status}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 text-stone-700 rounded-lg text-sm"
+                      >
+                        {status}
+                        <button
+                          type="button"
+                          onClick={() => removeStatus(status)}
+                          className="text-stone-400 hover:text-red-600"
+                          aria-label={`Remove ${status}`}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {itemStatuses.length < MAX_STATUSES && (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={statusInput}
+                        onChange={(e) => setStatusInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addStatus();
+                          }
+                        }}
+                        className="input flex-1 w-full"
+                        placeholder="Add a status label"
+                      />
+                      <button type="button" onClick={addStatus} className="btn-secondary shrink-0 w-full sm:w-auto justify-center">
+                        <Plus className="w-4 h-4" />
+                        Add
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import { FolderOpen, Globe, Lock, Layers } from 'lucide-react';
+import { getCollectionPath } from '../../utilis/collectionUrls.js';
 
-export default function CollectionCard({ collection, showOwner = false }) {
+export default function CollectionCard({ collection, showOwner = false, ownerUsername }) {
   const isPublic = collection.visibility === 'public';
+  const username = ownerUsername ?? collection.owner?.username;
+  const slug = collection.slug;
+  const href = username && slug ? getCollectionPath(username, slug) : '/collections';
 
   return (
     <Link
-      to={`/collections/${collection.id}`}
+      to={href}
       className="group block bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6 active:bg-stone-50"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -49,7 +53,10 @@ export default function CollectionCard({ collection, showOwner = false }) {
 
       {showOwner && collection.owner?.name && (
         <p className="mt-3 text-xs text-stone-500">
-          by <span className="font-medium text-stone-700">{collection.owner.name}</span>
+          by{' '}
+          <span className="font-medium text-stone-700">
+            {collection.owner.username ? `@${collection.owner.username}` : collection.owner.name}
+          </span>
         </p>
       )}
     </Link>

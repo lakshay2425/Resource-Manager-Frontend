@@ -17,6 +17,7 @@ export default function CollectionItemRow({
   isRemoving,
 }) {
   const resource = item.resource;
+  const hasStatuses = itemStatuses?.length > 0;
 
   return (
     <article
@@ -99,24 +100,26 @@ export default function CollectionItemRow({
         )}
       </div>
 
-      <div className="flex flex-col gap-2.5 pt-4 mt-1 border-t border-stone-100 shrink-0">
-        {isOwner ? (
-          <select
-            value={item.status}
-            onChange={(e) => onStatusChange(item.id, e.target.value)}
-            disabled={isUpdating}
-            className="input text-sm py-2.5 w-full"
-          >
-            {itemStatuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <span className="inline-flex justify-center px-3 py-2 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium">
-            {item.status}
-          </span>
+      <div className={`flex flex-col gap-2.5 shrink-0 ${hasStatuses ? 'pt-4 mt-1 border-t border-stone-100' : 'pt-3 mt-1 border-t border-stone-100'}`}>
+        {hasStatuses && (
+          isOwner ? (
+            <select
+              value={item.status}
+              onChange={(e) => onStatusChange(item.id, e.target.value)}
+              disabled={isUpdating}
+              className="input text-sm py-2.5 w-full"
+            >
+              {itemStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="inline-flex justify-center px-3 py-2 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium">
+              {item.status}
+            </span>
+          )
         )}
 
         <div className="flex items-center gap-2">

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   listMyCollections,
   listPublicCollections,
-  getCollection,
+  getCollectionBySlug,
   createCollection,
   updateCollection,
   deleteCollection,
@@ -16,7 +16,7 @@ export const collectionKeys = {
   all: ['collections'],
   mine: () => [...collectionKeys.all, 'mine'],
   public: () => [...collectionKeys.all, 'public'],
-  detail: (id) => [...collectionKeys.all, 'detail', id],
+  detail: (username, slug) => [...collectionKeys.all, 'detail', username, slug],
 };
 
 export const useMyCollections = (options = {}) => {
@@ -34,11 +34,11 @@ export const usePublicCollections = () => {
   });
 };
 
-export const useCollection = (id, options = {}) => {
+export const useCollectionBySlug = (username, slug, options = {}) => {
   return useQuery({
-    queryKey: collectionKeys.detail(id),
-    queryFn: () => getCollection(id),
-    enabled: Boolean(id),
+    queryKey: collectionKeys.detail(username, slug),
+    queryFn: () => getCollectionBySlug(username, slug),
+    enabled: Boolean(username && slug),
     ...options,
   });
 };
@@ -62,10 +62,17 @@ export const useUpdateCollection = () => {
 
   return useMutation({
     mutationFn: ({ id, payload }) => updateCollection(id, payload),
-    onSuccess: (collection) => {
+    onSuccess: (collection, { detailQueryKey }) => {
       queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
       queryClient.invalidateQueries({ queryKey: collectionKeys.public() });
-      queryClient.invalidateQueries({ queryKey: collectionKeys.detail(collection.id) });
+      if (detailQueryKey) {
+        queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
+      if (collection?.owner?.username && collection?.slug) {
+        queryClient.invalidateQueries({
+          queryKey: collectionKeys.detail(collection.owner.username, collection.slug),
+        });
+      }
     },
   });
 };
@@ -74,59 +81,69 @@ export const useDeleteCollection = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteCollection,
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id }) => deleteCollection(id),
+    onSuccess: (_data, { detailQueryKey }) => {
       queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
       queryClient.invalidateQueries({ queryKey: collectionKeys.public() });
-      queryClient.removeQueries({ queryKey: collectionKeys.detail(id) });
+      if (detailQueryKey) {
+        queryClient.removeQueries({ queryKey: detailQueryKey });
+      }
     },
   });
 };
 
-export const useAddCollectionItem = (collectionId) => {
+export const useAddCollectionItem = (collectionId, detailQueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload) => addCollectionItem(collectionId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: collectionKeys.detail(collectionId) });
+      if (detailQueryKey) {
+        queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
       queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
     },
   });
 };
 
-export const useUpdateCollectionItemStatus = (collectionId) => {
+export const useUpdateCollectionItemStatus = (collectionId, detailQueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ itemId, status }) =>
       updateCollectionItemStatus(collectionId, itemId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: collectionKeys.detail(collectionId) });
+      if (detailQueryKey) {
+        queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
     },
   });
 };
 
-export const useDeleteCollectionItem = (collectionId) => {
+export const useDeleteCollectionItem = (collectionId, detailQueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (itemId) => deleteCollectionItem(collectionId, itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: collectionKeys.detail(collectionId) });
+      if (detailQueryKey) {
+        queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
       queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
     },
   });
 };
 
-export const useReorderCollectionItems = (collectionId) => {
+export const useReorderCollectionItems = (collectionId, detailQueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (items) => reorderCollectionItems(collectionId, items),
     onMutate: async (items) => {
-      await queryClient.cancelQueries({ queryKey: collectionKeys.detail(collectionId) });
-      const previous = queryClient.getQueryData(collectionKeys.detail(collectionId));
+      if (!detailQueryKey) return {};
+
+      await queryClient.cancelQueries({ queryKey: detailQueryKey });
+      const previous = queryClient.getQueryData(detailQueryKey);
 
       if (previous) {
         const orderMap = new Map(items.map(({ id, order_index }) => [id, order_index]));
@@ -138,7 +155,7 @@ export const useReorderCollectionItems = (collectionId) => {
           )
           .sort((a, b) => a.order_index - b.order_index || a.created_at.localeCompare(b.created_at));
 
-        queryClient.setQueryData(collectionKeys.detail(collectionId), {
+        queryClient.setQueryData(detailQueryKey, {
           ...previous,
           items: nextItems,
         });
@@ -147,12 +164,14 @@ export const useReorderCollectionItems = (collectionId) => {
       return { previous };
     },
     onError: (_error, _items, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(collectionKeys.detail(collectionId), context.previous);
+      if (detailQueryKey && context?.previous) {
+        queryClient.setQueryData(detailQueryKey, context.previous);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: collectionKeys.detail(collectionId) });
+      if (detailQueryKey) {
+        queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
     },
   });
 };

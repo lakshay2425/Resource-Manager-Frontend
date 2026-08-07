@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { isValidSlug } from '../../utilis/collectionUrls.js';
 
 export default function EditCollectionModal({ collection, onClose, onSave, isSaving }) {
   const [name, setName] = useState(collection.name);
   const [description, setDescription] = useState(collection.description ?? '');
   const [visibility, setVisibility] = useState(collection.visibility ?? 'private');
+  const [slug, setSlug] = useState(collection.slug ?? '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName) return;
+
+    const trimmedSlug = slug.trim().toLowerCase();
+    if (trimmedSlug && !isValidSlug(trimmedSlug)) {
+      return;
+    }
 
     const payload = {};
     if (trimmedName !== collection.name) payload.name = trimmedName;
@@ -21,6 +28,8 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
 
     if (visibility !== collection.visibility) payload.visibility = visibility;
 
+    if (trimmedSlug && trimmedSlug !== collection.slug) payload.slug = trimmedSlug;
+
     if (Object.keys(payload).length === 0) {
       onClose();
       return;
@@ -28,6 +37,8 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
 
     onSave(payload);
   };
+
+  const slugInvalid = slug.trim() && !isValidSlug(slug.trim().toLowerCase());
 
   return (
     <div
@@ -71,6 +82,23 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">URL slug</label>
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase())}
+              className="input w-full"
+              placeholder="my-reading-list"
+            />
+            <p className="text-xs text-stone-500 mt-1.5">
+              Lowercase letters, numbers, and hyphens only. Renaming the collection does not change this automatically.
+            </p>
+            {slugInvalid && (
+              <p className="text-xs text-red-600 mt-1">Invalid slug format.</p>
+            )}
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-stone-700 mb-1.5">Visibility</label>
             <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="input w-full">
               <option value="private">Private</option>
@@ -82,7 +110,7 @@ export default function EditCollectionModal({ collection, onClose, onSave, isSav
             <button type="button" onClick={onClose} className="flex-1 btn-secondary justify-center" disabled={isSaving}>
               Cancel
             </button>
-            <button type="submit" className="flex-1 btn-primary justify-center" disabled={isSaving}>
+            <button type="submit" className="flex-1 btn-primary justify-center" disabled={isSaving || slugInvalid}>
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save changes'}
             </button>
           </div>

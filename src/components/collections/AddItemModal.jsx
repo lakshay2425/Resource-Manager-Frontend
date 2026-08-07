@@ -5,13 +5,14 @@ import { newItemIdempotencyKey } from '../../utilis/idempotency.js';
 export default function AddItemModal({
   resources,
   existingResourceIds = new Set(),
-  itemStatuses,
+  itemStatuses = [],
   onClose,
   onAdd,
   isAdding,
 }) {
   const [search, setSearch] = useState('');
   const [selectedResourceId, setSelectedResourceId] = useState('');
+  const hasStatuses = itemStatuses.length > 0;
   const [status, setStatus] = useState(itemStatuses[0] ?? '');
   const [idempotencyKey] = useState(() => newItemIdempotencyKey());
 
@@ -38,13 +39,19 @@ export default function AddItemModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedResourceId || !status) return;
+    if (!selectedResourceId) return;
+    if (hasStatuses && !status) return;
 
-    onAdd({
+    const payload = {
       resource_id: selectedResourceId,
-      status,
       idempotency_key: idempotencyKey,
-    });
+    };
+
+    if (hasStatuses) {
+      payload.status = status;
+    }
+
+    onAdd(payload);
   };
 
   const emptyMessage =
@@ -104,16 +111,18 @@ export default function AddItemModal({
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Status</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-full" required>
-              {itemStatuses.map((itemStatus) => (
-                <option key={itemStatus} value={itemStatus}>
-                  {itemStatus}
-                </option>
-              ))}
-            </select>
-          </div>
+          {hasStatuses && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-full" required>
+                {itemStatuses.map((itemStatus) => (
+                  <option key={itemStatus} value={itemStatus}>
+                    {itemStatus}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 btn-secondary justify-center" disabled={isAdding}>

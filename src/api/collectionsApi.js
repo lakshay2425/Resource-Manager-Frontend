@@ -10,8 +10,8 @@ export const listPublicCollections = async () => {
   return data.collections ?? [];
 };
 
-export const getCollection = async (id) => {
-  const { data } = await axiosInstance.get(`/collections/${id}`);
+export const getCollectionBySlug = async (username, slug) => {
+  const { data } = await axiosInstance.get(`/collections/u/${username}/${slug}`);
   return data.collection;
 };
 

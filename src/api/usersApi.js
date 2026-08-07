@@ -5,16 +5,16 @@ export const checkUserExists = async () => {
   return data?.exists ?? false;
 };
 
-export const createLocalUser = async (name) => {
-  const { data } = await axiosInstance.post('/users', { name });
+export const createLocalUser = async ({ name, username }) => {
+  const { data } = await axiosInstance.post('/users', { name, username });
   return data?.user ?? data;
 };
 
-export const ensureLocalUser = async (name) => {
+export const ensureLocalUser = async ({ name, username }) => {
   const exists = await checkUserExists();
   if (exists) {
     return { created: false };
   }
-  const user = await createLocalUser(name);
+  const user = await createLocalUser({ name, username });
   return { created: true, user };
 };
