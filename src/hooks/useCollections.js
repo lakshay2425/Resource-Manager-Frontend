@@ -7,6 +7,7 @@ import {
   updateCollection,
   deleteCollection,
   addCollectionItem,
+  createAndAddCollectionItem,
   updateCollectionItemStatus,
   deleteCollectionItem,
   reorderCollectionItems,
@@ -104,6 +105,35 @@ export const useAddCollectionItem = (collectionId, detailQueryKey) => {
     onSuccess: () => {
       if (detailQueryKey) {
         queryClient.invalidateQueries({ queryKey: detailQueryKey });
+      }
+      queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
+    },
+  });
+};
+
+export const useCreateAndAddCollectionItem = (collectionId, detailQueryKey) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload) => createAndAddCollectionItem(collectionId, payload),
+    onSuccess: (result) => {
+      if (detailQueryKey && result.item) {
+        queryClient.setQueryData(detailQueryKey, (previous) => {
+          if (!previous) return previous;
+
+          const exists = previous.items?.some((item) => item.id === result.item.id);
+          const nextItems = exists
+            ? previous.items
+            : [...(previous.items ?? []), result.item];
+
+          nextItems.sort(
+            (a, b) =>
+              a.order_index - b.order_index ||
+              (a.created_at ?? '').localeCompare(b.created_at ?? '')
+          );
+
+          return { ...previous, items: nextItems };
+        });
       }
       queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
     },

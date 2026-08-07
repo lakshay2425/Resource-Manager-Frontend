@@ -27,3 +27,8 @@ export const getCollectionPath = (username, slug) =>
   `/collections/${formatUsernameForUrl(username)}/${slug}`;
 
 export const getResourceId = (resource) => resource?._id ?? resource?.id;
+
+export const looksLikeUrl = (query) => {
+  const trimmed = query.trim();
+  return /^https?:\/\//i.test(trimmed) || trimmed.includes('.');
+};

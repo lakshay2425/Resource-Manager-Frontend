@@ -44,6 +44,18 @@ export const addCollectionItem = async (collectionId, payload) => {
   };
 };
 
+export const createAndAddCollectionItem = async (collectionId, payload) => {
+  const res = await axiosInstance.post(
+    `/collections/${collectionId}/items/create-and-add`,
+    payload
+  );
+  return {
+    status: res.status,
+    item: res.data.item,
+    message: res.data.message,
+  };
+};
+
 export const updateCollectionItemStatus = async (collectionId, itemId, status) => {
   const { data } = await axiosInstance.patch(
     `/collections/${collectionId}/items/${itemId}`,

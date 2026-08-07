@@ -24,6 +24,7 @@ import {
   useUpdateCollection,
   useDeleteCollection,
   useAddCollectionItem,
+  useCreateAndAddCollectionItem,
   useUpdateCollectionItemStatus,
   useDeleteCollectionItem,
   useReorderCollectionItems,
@@ -87,6 +88,10 @@ export default function CollectionDetail() {
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } = useUpdateCollection();
   const { mutateAsync: deleteCollection, isPending: isDeletingCollection } = useDeleteCollection();
   const { mutateAsync: addItem, isPending: isAddingItem } = useAddCollectionItem(collectionId, detailQueryKey);
+  const { mutateAsync: createAndAddItem, isPending: isCreatingAndAdding } = useCreateAndAddCollectionItem(
+    collectionId,
+    detailQueryKey
+  );
   const { mutateAsync: updateItemStatus } = useUpdateCollectionItemStatus(collectionId, detailQueryKey);
   const { mutateAsync: removeItem } = useDeleteCollectionItem(collectionId, detailQueryKey);
   const { mutateAsync: reorderItems, isPending: isReordering } = useReorderCollectionItems(collectionId, detailQueryKey);
@@ -160,6 +165,29 @@ export default function CollectionDetail() {
       const message = getCollectionErrorMessage(err, 'Failed to add resource.');
       toast.error(message);
     }
+  };
+
+  const handleCreateAndAdd = async (payload) => {
+    const result = await createAndAddItem(payload);
+
+    if (result.status === 200) {
+      toast.success('Resource was already in this collection.');
+    } else {
+      toast.success('Resource created and added.');
+    }
+
+    if (result.item?.resource) {
+      const resource = result.item.resource;
+      const normalized = { ...resource, _id: getResourceId(resource) };
+      setResources((prev) => {
+        if (prev.some((r) => getResourceId(r) === getResourceId(normalized))) {
+          return prev;
+        }
+        return [...prev, normalized];
+      });
+    }
+
+    setShowAddModal(false);
   };
 
   const handleSaveCollection = async (payload) => {
@@ -426,6 +454,8 @@ export default function CollectionDetail() {
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddItem}
           isAdding={isAddingItem}
+          onCreateAndAdd={handleCreateAndAdd}
+          isCreatingAndAdding={isCreatingAndAdding}
         />
       )}
 
