@@ -1,17 +1,18 @@
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { FolderOpen, Plus, Loader2, AlertCircle } from 'lucide-react';
 import CollectionCard from '../components/collections/CollectionCard.jsx';
 import { useMyCollections } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
-import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
+import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export default function MyCollections() {
   const { data: collections = [], isLoading, isError, error, refetch, isFetching } = useMyCollections();
   const { username: authUsername } = useContext(AuthContext);
   const [userInfo] = useLocalStorageState('userInfo', null);
-  const ownerUsername = authUsername || userInfo?.username;
+  const ownerUsername = formatUsernameForUrl(authUsername || userInfo?.username || userInfo?.name);
 
   if (isLoading) {
     return (

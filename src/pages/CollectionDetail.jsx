@@ -29,7 +29,7 @@ import {
   useReorderCollectionItems,
 } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
-import { getCollectionPath, getResourceId } from '../utilis/collectionUrls.js';
+import { getCollectionPath, getResourceId, formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export default function CollectionDetail() {
   const { username, slug } = useParams();
@@ -44,7 +44,7 @@ export default function CollectionDetail() {
   const [removingItemId, setRemovingItemId] = useState(null);
   const dragItemIdRef = useRef(null);
 
-  const detailQueryKey = collectionKeys.detail(username, slug);
+  const detailQueryKey = collectionKeys.detail(formatUsernameForUrl(username), slug);
 
   const { data: collection, isLoading, isError, error, refetch } = useCollectionBySlug(username, slug);
 
@@ -149,7 +149,9 @@ export default function CollectionDetail() {
       toast.success('Collection updated.');
       setShowEditModal(false);
 
-      const ownerUsername = updated?.owner?.username ?? collection.owner?.username ?? username;
+      const ownerUsername = formatUsernameForUrl(
+        updated?.owner?.username ?? collection.owner?.username ?? username
+      );
       const nextSlug = updated?.slug ?? collection.slug;
 
       if (payload.slug && nextSlug !== slug && ownerUsername) {
@@ -249,7 +251,7 @@ export default function CollectionDetail() {
   }
 
   const isPublic = collection.visibility === 'public';
-  const shareUsername = collection.owner?.username ?? username;
+  const shareUsername = formatUsernameForUrl(collection.owner?.username ?? username);
 
   return (
     <div className="min-h-screen bg-stone-50">

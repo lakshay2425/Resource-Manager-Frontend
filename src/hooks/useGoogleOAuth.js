@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useLocalStorageState } from './useLocalStorage.js';
 import { ensureLocalUser } from '../api/usersApi.js';
+import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export const useGoogleAuth = () => {
   const { setIsAuthenticated, setGmail, setName, setUsername } = useContext(AuthContext);
@@ -28,19 +29,20 @@ export const useGoogleAuth = () => {
       }
       if (result.status == 200 || result.status == 201) {
         const { name, username, email, profileImage } = result.data.userInfo;
+        const normalizedUsername = formatUsernameForUrl(username || name);
 
         setUser({
           profilePic: profileImage,
-          username,
+          username: normalizedUsername,
           name,
         });
         setGmail(email);
         setName(name ?? '');
-        setUsername(username ?? '');
+        setUsername(normalizedUsername);
         setIsAuthenticated(true);
 
         try {
-          await ensureLocalUser({ name, username });
+          await ensureLocalUser({ name, username: normalizedUsername });
         } catch (signupError) {
           const status = signupError?.response?.status;
           const message = signupError?.response?.data?.message ?? '';

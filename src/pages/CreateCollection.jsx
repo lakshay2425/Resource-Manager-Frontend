@@ -7,7 +7,7 @@ import { useEnsureLocalUser } from '../hooks/useLocalUser.js';
 import { newCollectionIdempotencyKey } from '../utilis/idempotency.js';
 import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
-import { getCollectionPath } from '../utilis/collectionUrls.js';
+import { getCollectionPath, formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 const MAX_STATUSES = 5;
 
@@ -60,8 +60,8 @@ export default function CreateCollection() {
       return;
     }
 
-    const username = userInfo?.username;
-    const displayName = userInfo?.name || username || 'ResourceHub User';
+    const displayName = userInfo?.name || userInfo?.username || 'ResourceHub User';
+    const username = formatUsernameForUrl(userInfo?.username || userInfo?.name);
 
     if (!username) {
       toast.error('Username is missing. Please log out and sign in again.');

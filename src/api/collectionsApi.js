@@ -1,4 +1,5 @@
 import axiosInstance from '../utilis/Axios.jsx';
+import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export const listMyCollections = async () => {
   const { data } = await axiosInstance.get('/collections');
@@ -10,8 +11,9 @@ export const listPublicCollections = async () => {
   return data.collections ?? [];
 };
 
-export const getCollectionBySlug = async (username, slug) => {
-  const { data } = await axiosInstance.get(`/collections/u/${username}/${slug}`);
+export const getCollectionBySlug = async (username, slug) => {  const { data } = await axiosInstance.get(
+    `/collections/u/${formatUsernameForUrl(username)}/${slug}`
+  );
   return data.collection;
 };
 

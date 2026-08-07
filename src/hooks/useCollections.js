@@ -11,6 +11,7 @@ import {
   deleteCollectionItem,
   reorderCollectionItems,
 } from '../api/collectionsApi';
+import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export const collectionKeys = {
   all: ['collections'],
@@ -70,7 +71,10 @@ export const useUpdateCollection = () => {
       }
       if (collection?.owner?.username && collection?.slug) {
         queryClient.invalidateQueries({
-          queryKey: collectionKeys.detail(collection.owner.username, collection.slug),
+          queryKey: collectionKeys.detail(
+            formatUsernameForUrl(collection.owner.username),
+            collection.slug
+          ),
         });
       }
     },

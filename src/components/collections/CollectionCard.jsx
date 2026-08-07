@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { FolderOpen, Globe, Lock, Layers } from 'lucide-react';
-import { getCollectionPath } from '../../utilis/collectionUrls.js';
+import { getCollectionPath, formatUsernameForUrl } from '../../utilis/collectionUrls.js';
 
 export default function CollectionCard({ collection, showOwner = false, ownerUsername }) {
   const isPublic = collection.visibility === 'public';
-  const username = ownerUsername ?? collection.owner?.username;
+  const username = formatUsernameForUrl(ownerUsername ?? collection.owner?.username ?? collection.owner?.name);
   const slug = collection.slug;
   const href = username && slug ? getCollectionPath(username, slug) : '/collections';
 

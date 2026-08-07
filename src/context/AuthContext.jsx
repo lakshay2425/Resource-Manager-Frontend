@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         setGmail(authInfo.userEmail);
         setName(stored?.name ?? authInfo.name ?? '');
-        setUsername(stored?.username ?? authInfo.username ?? '');
+        setUsername(formatUsernameForUrl(stored?.username ?? authInfo.username ?? authInfo.name ?? ''));
       } else {
         setIsAuthenticated(false);
         setGmail('');
