@@ -6,16 +6,25 @@ import App from './App.jsx'
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx';
+import { OnlineStatusProvider } from './context/OnlineStatusContext.jsx';
 import {LoadingProvider} from './context/LoadingContext.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { registerSW } from 'virtual:pwa-register'
 
 const queryClient = new QueryClient()
 
+registerSW({
+  immediate: true,
+  onOfflineReady() {
+    console.info('ResourceHub is ready to work offline.')
+  },
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Toaster/>
     <BrowserRouter>
+    <OnlineStatusProvider>
     <LoadingProvider>
     <AuthProvider>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -25,6 +34,7 @@ createRoot(document.getElementById('root')).render(
     </GoogleOAuthProvider>    
     </AuthProvider>
     </LoadingProvider>
+    </OnlineStatusProvider>
     </BrowserRouter>
   </StrictMode>,
 )

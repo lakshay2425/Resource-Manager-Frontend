@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useGoogleAuth } from "../hooks/useGoogleOAuth.js";
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
 import useSectionNavigation from '../hooks/useNavigation.js';
+import { useOfflineGuard } from '../hooks/useOfflineGuard.js';
 import profileImage from "./profileImagePlaceholder.png"
 
 const Navbar = () => {
@@ -22,6 +23,7 @@ const Navbar = () => {
 
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
+  const { guardWrite, writeDisabled } = useOfflineGuard();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -53,6 +55,8 @@ const Navbar = () => {
   }, [location]);
 
   const handleLogout = async () => {
+    if (!guardWrite()) return;
+
     const response = await axios.post(`${authService}/users/logout`, null, {
       withCredentials: true
     });
@@ -156,7 +160,18 @@ const Navbar = () => {
                 {/* Create Resource Button */}
                 <Link
                   to="/createResource"
-                  className="flex items-center gap-2 px-4 py-2 ml-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                  onClick={(e) => {
+                    if (writeDisabled) {
+                      e.preventDefault();
+                      guardWrite();
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 ml-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
+                    writeDisabled
+                      ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
+                      : 'bg-slate-700 hover:bg-slate-800 text-white hover:shadow-md'
+                  }`}
+                  aria-disabled={writeDisabled}
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Add Resource</span>
@@ -230,8 +245,9 @@ const Navbar = () => {
                   <span>Collections</span>
                 </Link>
                 <button
-                  onClick={() => handleGoogleLogin()}
-                  className="ml-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                  onClick={() => guardWrite(() => handleGoogleLogin())}
+                  disabled={writeDisabled}
+                  className="ml-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   Get Started
                 </button>
@@ -275,7 +291,18 @@ const Navbar = () => {
 
                   <Link
                     to="/createResource"
-                    className="flex items-center gap-3 px-4 py-3 bg-amber-50 text-slate-800 rounded-lg text-sm font-medium"
+                    onClick={(e) => {
+                      if (writeDisabled) {
+                        e.preventDefault();
+                        guardWrite();
+                      }
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium ${
+                      writeDisabled
+                        ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
+                        : 'bg-amber-50 text-slate-800'
+                    }`}
+                    aria-disabled={writeDisabled}
                   >
                     <PlusCircle className="w-5 h-5" />
                     <span>Add Resource</span>
@@ -340,8 +367,9 @@ const Navbar = () => {
                     Public Collections
                   </Link>
                   <button
-                    onClick={() => handleGoogleLogin()}
-                    className="w-full mt-2 px-5 py-3 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200"
+                    onClick={() => guardWrite(() => handleGoogleLogin())}
+                    disabled={writeDisabled}
+                    className="w-full mt-2 px-5 py-3 bg-slate-700 hover:bg-slate-800 disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-all duration-200"
                   >
                     Get Started
                   </button>
