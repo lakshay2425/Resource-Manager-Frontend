@@ -9,6 +9,7 @@ import {
   Link,
   Hash,
   AlertTriangle,
+  AlertCircle,
   Type,
   X,
   Plus,
@@ -21,6 +22,10 @@ import {
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useForm } from 'react-hook-form';
+import {
+  isDuplicateResourceError,
+  getDuplicateResourceMessage,
+} from '../utilis/resourceErrors.js';
 
 export default function EditResourcePage() {
   const { id } = useParams();
@@ -32,6 +37,7 @@ export default function EditResourcePage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle');
+  const [submitError, setSubmitError] = useState('');
   const [tagSuggestions] = useState([
     'React', 'Vue', 'Angular', 'JavaScript', 'TypeScript', 'Node.js',
     'Frontend', 'Backend', 'Full Stack', 'CSS', 'HTML', 'Python',
@@ -60,6 +66,12 @@ export default function EditResourcePage() {
 
   const currentTags = watch('tags');
   const currentStatus = watch('status');
+  const watchedName = watch('name');
+  const watchedSourceLink = watch('sourceLink');
+
+  useEffect(() => {
+    setSubmitError('');
+  }, [watchedName, watchedSourceLink]);
 
   useEffect(() => {
     if (initialResource) {
@@ -114,6 +126,7 @@ export default function EditResourcePage() {
   };
 
   const onSubmit = async (data) => {
+    setSubmitError('');
     const updatedFields = getDirtyValues(dirtyFields, data);
 
     if (updatedFields.name !== undefined) {
@@ -150,8 +163,13 @@ export default function EditResourcePage() {
       }
     } catch (error) {
       console.error('Error saving resource:', error);
-      const serverMessage = error.response?.data?.message || error.response?.data?.error;
-      toast.error(serverMessage || 'Failed to update resource.', { id: saveToastId });
+      if (isDuplicateResourceError(error)) {
+        toast.dismiss(saveToastId);
+        setSubmitError(getDuplicateResourceMessage(error));
+      } else {
+        const serverMessage = error.response?.data?.message || error.response?.data?.error;
+        toast.error(serverMessage || 'Failed to update resource.', { id: saveToastId });
+      }
     } finally {
       setSaveStatus('idle');
     }
@@ -449,6 +467,13 @@ export default function EditResourcePage() {
                 </div>
               </div>
             </div>
+
+            {submitError && (
+              <div className="mb-6 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{submitError}</p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex items-center justify-between">

@@ -15,6 +15,10 @@ import {
 import axiosInstance from "../utilis/Axios"
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import {
+  isDuplicateResourceError,
+  getDuplicateResourceMessage,
+} from '../utilis/resourceErrors.js';
 
 const isValidUrl = (string) => {
   try {
@@ -33,6 +37,7 @@ export default function ResourceCreationForm() {
   });
 
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const linkInputRef = useRef(null);
@@ -48,6 +53,10 @@ export default function ResourceCreationForm() {
         ...prev,
         [field]: ''
       }));
+    }
+
+    if (submitError && (field === 'name' || field === 'link')) {
+      setSubmitError('');
     }
   };
 
@@ -73,6 +82,7 @@ export default function ResourceCreationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     if (!validateForm()) {
       toast.error("Please enter valid information before submitting.");
       return;
@@ -92,8 +102,12 @@ export default function ResourceCreationForm() {
       }
     } catch (error) {
       console.error(error.message, "Failed to create resource");
-      const serverMessage = error.response?.data?.message || error.response?.data?.error;
-      toast.error(serverMessage || "Failed to create resource. Try again");
+      if (isDuplicateResourceError(error)) {
+        setSubmitError(getDuplicateResourceMessage(error));
+      } else {
+        const serverMessage = error.response?.data?.message || error.response?.data?.error;
+        toast.error(serverMessage || "Failed to create resource. Try again");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -213,6 +227,13 @@ export default function ResourceCreationForm() {
                   </p>
                 </div>
               </div>
+
+              {submitError && (
+                <div className="mb-6 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{submitError}</p>
+                </div>
+              )}
 
               <button
                 type="submit"

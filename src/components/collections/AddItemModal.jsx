@@ -4,6 +4,10 @@ import { newItemIdempotencyKey } from '../../utilis/idempotency.js';
 import { looksLikeUrl } from '../../utilis/collectionUrls.js';
 import { isValidUrl } from '../../utilis/tagsFunction.js';
 import { getCollectionErrorMessage } from '../../utilis/collectionErrors.js';
+import {
+  isDuplicateResourceError,
+  getDuplicateResourceMessage,
+} from '../../utilis/resourceErrors.js';
 
 export default function AddItemModal({
   resources,
@@ -125,7 +129,10 @@ export default function AddItemModal({
         idempotency_key: createIdempotencyKey,
       });
     } catch (err) {
-      setCreateSubmitError(getCollectionErrorMessage(err, 'Failed to create resource.'));
+      const message = isDuplicateResourceError(err)
+        ? getDuplicateResourceMessage(err)
+        : getCollectionErrorMessage(err, 'Failed to create resource.');
+      setCreateSubmitError(message);
     }
   };
 
