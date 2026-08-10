@@ -1,44 +1,58 @@
 # ResourceHub
 
-> ResourceHub is a web application for saving, organizing, searching, and sharing valuable resource links. Users can keep private libraries, publish public resources, and build curated public collections with optional workflow statuses.
+> ResourceHub is a progressive web app for saving, organizing, searching, and sharing valuable resource links. Users keep private libraries, publish public resources, build curated collections with optional workflow statuses, and manage bookmarks and documents.
 
 Site: https://resources.lakshaymahajan.com
 
 ## Public pages (indexable)
 
-- [Home](https://resources.lakshaymahajan.com/): Product landing page — save links, organize with tags, share publicly or keep private.
+- [Home](https://resources.lakshaymahajan.com/): Product landing — save links, organize with tags, share publicly or keep private.
 - [Public Resources](https://resources.lakshaymahajan.com/publicResources): Community-shared resource links browsable without login.
 - [Public Collections](https://resources.lakshaymahajan.com/collections/public): Community-curated ordered lists of resources.
-- [Public Collection Detail](https://resources.lakshaymahajan.com/collections/{username}/{slug}): Individual public collection pages (dynamic URLs).
+- [Public Collection Detail](https://resources.lakshaymahajan.com/collections/{username}/{slug}): Individual public collection pages (dynamic URLs; discoverable via on-page links).
 
 ## Authentication-required pages (not for indexing)
 
 - /resources — user's private and public resource library
 - /bookmarks — saved bookmarks
-- /createResource — create a resource
-- /edit/:id — edit a resource
-- /documents — document management
-- /collections — user's private collections
+- /createResource — create a resource (name + URL)
+- /edit/:id — edit a resource (description, tags, visibility, source link)
+- /documents — document upload and management
+- /collections — user's private collections list
 - /collections/new — create a collection
+- /offline — PWA offline fallback page
 
 ## Core features
 
-- Google OAuth login
-- Fast resource create (name + URL), enrich later with description, tags, visibility
-- Public resource discovery and search
-- Collections with optional status labels (e.g. todo, done)
+- Google OAuth login (external auth service)
+- Fast resource create (name + URL only); enrich later with description, tags, and visibility on edit
+- Duplicate detection: backend returns HTTP 409 when the same user submits an existing name + URL pair
+- Public resource discovery with search and category filtering
+- Collections: public or private, ordered items, optional per-item status labels (e.g. todo, done)
+- Collection create-and-add: create a new resource and add it to a collection in one step
 - Bookmarks and document uploads (authenticated)
+- Progressive Web App: installable, offline shell, service-worker caching for static assets and GET API reads
+
+## Tech stack (frontend)
+
+- React 19, Vite 7, Tailwind CSS 4, React Router 7
+- TanStack React Query for server state (collections, documents)
+- React Hook Form, react-hot-toast, Axios
+- vite-plugin-pwa (Workbox) for offline support
 
 ## API dependencies
 
-- Backend API: configured via VITE_BACKEND_URL (resource CRUD, collections, bookmarks, documents)
-- Auth service: configured via VITE_AUTH_URL (Google OAuth)
+- Backend API (`VITE_BACKEND_URL`): resource CRUD, collections, bookmarks, documents
+- Auth service (`VITE_AUTH_URL`): Google OAuth session verification
 
-## Sitemap
+## SEO & crawl files
 
-https://resources.lakshaymahajan.com/sitemap.xml
+- Sitemap: https://resources.lakshaymahajan.com/sitemap.xml
+- Robots: https://resources.lakshaymahajan.com/robots.txt
+- Runtime meta tags: `src/hooks/usePageSeo.js`, `src/utilis/seo.js`
 
 ## Contact / source
 
 - Repository: resourceManager-frontend (ResourceHub frontend)
 - License: MIT
+- Email: lakshay12290@gmail.com

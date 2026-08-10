@@ -13,8 +13,31 @@ Disallow: /edit/
 Disallow: /documents
 Disallow: /collections/new
 Disallow: /collections
+Disallow: /offline
 
-# LLM / AI discovery
+# Machine-readable site summary for LLM / AI crawlers
+# https://llmstxt.org/
 # See https://resources.lakshaymahajan.com/llm.txt
+
+User-agent: GPTBot
+Allow: /llm.txt
+Allow: /
+Allow: /publicResources
+Allow: /collections/public
+
+User-agent: ChatGPT-User
+Allow: /llm.txt
+Allow: /
+Allow: /publicResources
+Allow: /collections/public
+
+User-agent: Claude-Web
+Allow: /llm.txt
+Allow: /
+Allow: /publicResources
+Allow: /collections/public
+
+User-agent: Google-Extended
+Allow: /llm.txt
 
 Sitemap: https://resources.lakshaymahajan.com/sitemap.xml

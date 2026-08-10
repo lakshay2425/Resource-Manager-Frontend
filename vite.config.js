@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['resourceManagerLogo.png', 'robots.txt', 'sitemap.xml', 'offline.html'],
+        includeAssets: ['resourceManagerLogo.png', 'robots.txt', 'sitemap.xml', 'llm.txt', 'offline.html'],
         manifest: {
           name: 'ResourceHub',
           short_name: 'ResourceHub',

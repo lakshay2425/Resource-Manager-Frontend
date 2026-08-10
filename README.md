@@ -40,11 +40,21 @@
 
 - **Public Resource Discovery**: Browse amazing resources shared by the community
 - **Resource Sharing**: Make your resources public to help others learn
-- **User Profiles**: Track resource ownership and contributions
+- **Public Collections**: Explore and share curated, ordered resource lists
+- **Collection Workflows**: Optional per-item status labels (e.g. todo, done) on collections
+- **User Profiles**: Track resource ownership and contributions via collection URLs (`/collections/:username/:slug`)
+
+### 📱 **Progressive Web App**
+
+- **Installable**: Add ResourceHub to your home screen (Android/desktop; iOS via Share → Add to Home Screen)
+- **Offline shell**: Service worker caches static assets; dedicated `/offline` fallback page
+- **Offline-aware writes**: Mutations blocked with a clear toast when the network is unavailable
+- **Install prompt**: In-app prompt for supported browsers
 
 ### ⚡ **Performance & Development**
 
 - **Code Splitting**: Lazy loading of components for optimal performance
+- **React Query**: Server-state caching for collections and documents
 - **Hot Module Replacement**: Fast development with Vite HMR
 - **ESLint Integration**: Code quality assurance and formatting
 - **Docker Support**: Containerized deployment ready
@@ -53,9 +63,10 @@
 
 ### Prerequisites
 
-- **Node.js** 16.0 or higher
+- **Node.js** 18.0 or higher (Docker image uses Node 24)
 - **npm** or **yarn** package manager
-- **Backend API server** running (see backend documentation)
+- **Backend API server** running (see [`resourceManager-backend`](https://github.com/lakshay2425/resourceManager-backend))
+- **Auth service** for Google OAuth (`VITE_AUTH_URL` — external to this repo)
 - **Docker** (optional, for containerized deployment)
 
 ### Installation
@@ -76,23 +87,18 @@
    ```
 
 3. **Set up environment variables**
-   Create a `.env` file in the root directory:
+
+   Create a `.env` file in the root directory (not committed — see `.gitignore`):
 
    ```env
-   
-   # For local development
-   # VITE_BACKEND_URL=http://localhost:3000/api
-   # VITE_AUTH_URL=http://localhost:5000/api
-   
-   # Frontend configuration
-   VITE_FRONTEND_URL=http://localhost:4000
-   
-   # Google OAuth
-   VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
-   
-   # Development mode
-   VITE_DEV_MODE=false
+   VITE_BACKEND_URL=http://localhost:3000/api
+   VITE_AUTH_URL=http://localhost:5000/api
+   VITE_FRONTEND_URL=http://localhost:5173
+   VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+   VITE_DEV_MODE=true
    ```
+
+   There is **no Vite dev proxy** — the app calls these absolute URLs directly, so the backend must be reachable at `VITE_BACKEND_URL`.
 
 4. **Start the development server**
 
@@ -153,9 +159,10 @@ The Dockerfile uses a multi-stage build process:
 
 ### **State Management**
 
-- **React Context API**: Global state management for authentication and loading
+- **React Context API**: Global state for authentication, loading, and online status
+- **TanStack React Query**: Server state for collections and documents
 - **React Hook Form**: Efficient form handling and validation
-- **Custom Hooks**: Reusable logic for OAuth, local storage, navigation, and loading
+- **Custom Hooks**: OAuth, local storage, navigation, loading, SEO, offline guard, collections
 
 ### **Authentication & API**
 
@@ -168,64 +175,80 @@ The Dockerfile uses a multi-stage build process:
 
 - **React Hot Toast**: Beautiful toast notifications
 - **ESLint v9**: Latest code linting and formatting
-- **Lazy Loading**: Code-splitting for optimal performance
+- **Lazy Loading**: Code-splitting with offline chunk fallback
 - **Suspense**: React Suspense for loading states
+- **vite-plugin-pwa**: Service worker and web app manifest
 
 ## 📁 Project Structure
 
 ```
 src/
-├── components/              # Reusable UI components
-│   ├── HomePage/           # Landing page specific components
-│   │   ├── Features.jsx    # Features section
-│   │   ├── HeroSection.jsx # Hero banner
-│   │   └── WhyRH.jsx      # Why ResourceHub section
-│   ├── BookmarkCard.jsx    # Bookmark list card
-│   ├── Footer.jsx          # Application footer
-│   ├── LoadingBar.jsx      # Loading spinner component
-│   ├── LoadingScreen.jsx   # Full-screen loading component
-│   └── Navbar.jsx          # Navigation header with auth
-├── context/                # React Context providers
-│   ├── AuthContext.jsx     # Authentication state management
-│   └── LoadingContext.jsx  # Loading state management
-├── hooks/                  # Custom React hooks
-│   ├── useDocuments.js     # Document React Query hooks
-│   ├── useGoogleOAuth.js   # Google OAuth integration
-│   ├── useLocalStorage.js  # Local storage state sync
-│   ├── useLoading.js       # Loading state hook
-│   └── useNavigation.js    # Smooth scrolling navigation
-├── pages/                  # Main application pages
-│   ├── Home.jsx            # Landing page
-│   ├── Resources.jsx       # User's resource management
-│   ├── publicResources.jsx # Community resources
-│   ├── CreateResource.jsx  # Create form (name + link only)
-│   ├── EditResource.jsx    # Edit form (full fields, prefilled)
-│   ├── BookmarkResources.jsx # User bookmarks
-│   ├── DocumentManagement.jsx # Document upload/management
-│   └── NotFound.jsx        # 404 error page
-├── api/                    # API client helpers
-│   └── documentApi.js      # Document / MinIO upload APIs
-├── utilis/                 # Utility functions
-│   ├── Axios.jsx           # API client configuration
-│   ├── getCategoryColor.js # Tag color generation
-│   ├── getCategoryIcon.jsx # Category icon mapping
-│   ├── getInitials.js      # User avatar initials
-│   ├── renderProtectedRoute.jsx # Route protection HOC
-│   ├── scrollToTop.jsx     # Scroll to top utility
-│   └── tagsFunction.js     # Tag manipulation utilities
-├── App.jsx                 # Main application component
-├── main.jsx               # Application entry point
-└── index.css              # Global styles (Tailwind imports)
+├── api/                    # API client modules
+│   ├── collectionsApi.js   # Collections CRUD and item mutations
+│   ├── documentApi.js      # Document / MinIO upload APIs
+│   └── usersApi.js         # User profile helpers
+├── components/             # Reusable UI components
+│   ├── collections/        # Collection cards, modals, item rows
+│   ├── HomePage/           # Landing page sections
+│   ├── BookmarkCard.jsx
+│   ├── Footer.jsx
+│   ├── InstallPrompt.jsx   # PWA install prompt
+│   ├── LoadingBar.jsx
+│   ├── LoadingScreen.jsx
+│   ├── Navbar.jsx
+│   ├── OfflineBanner.jsx
+│   ├── ResourceCard.jsx
+│   └── RouteErrorBoundary.jsx
+├── context/
+│   ├── AuthContext.jsx
+│   ├── LoadingContext.jsx
+│   └── OnlineStatusContext.jsx
+├── hooks/
+│   ├── useCollections.js   # React Query hooks for collections
+│   ├── useDocuments.js
+│   ├── useGoogleOAuth.js
+│   ├── useLocalStorage.js
+│   ├── useLoading.js
+│   ├── useNavigation.js
+│   ├── useOfflineGuard.js
+│   └── usePageSeo.js       # Per-route SEO meta tags
+├── pages/
+│   ├── Home.jsx
+│   ├── Resources.jsx
+│   ├── publicResources.jsx
+│   ├── CreateResource.jsx
+│   ├── EditResource.jsx
+│   ├── BookmarkResources.jsx
+│   ├── DocumentManagement.jsx
+│   ├── MyCollections.jsx
+│   ├── PublicCollections.jsx
+│   ├── CreateCollection.jsx
+│   ├── CollectionDetail.jsx
+│   ├── Offline.jsx
+│   └── NotFound.jsx
+├── utilis/
+│   ├── Axios.jsx           # Axios instance + offline write guard
+│   ├── seo.js              # Meta tags, JSON-LD, canonical URLs
+│   ├── collectionErrors.js # Collection API error messages
+│   ├── resourceErrors.js   # Duplicate resource (409) helpers
+│   ├── networkStatus.js
+│   ├── idempotency.js
+│   ├── lazyWithOfflineFallback.js
+│   └── renderProtectedRoute.jsx
+├── App.jsx
+├── main.jsx
+└── index.css
 
 public/
-├── resourceManagerLogo.png # Application logo
+├── resourceManagerLogo.png
 ├── health                  # Docker / load-balancer health check (JSON)
 ├── llm.txt                 # LLM / AI crawler site summary
 ├── robots.txt              # Search engine crawl rules
-└── sitemap.xml             # Static public URL sitemap
+├── sitemap.xml             # Static public URL sitemap
+└── offline.html            # PWA offline fallback
 
 Docker/
-└── Dockerfile            # Multi-stage Docker configuration
+└── Dockerfile
 ```
 
 ## 🛠️ Key Components
@@ -301,6 +324,35 @@ Create and edit use **separate page components** (not one shared form):
 
 **Field name trap:** create uses `link`; GET responses and PATCH use `sourceLink`.
 
+### **Duplicate resource handling (HTTP 409)**
+
+The backend rejects duplicate resources for the same user with the same name + URL. Affected flows:
+
+| Flow | Endpoint | UX on 409 |
+|------|----------|-----------|
+| Create | `POST /resources` | Inline banner on form; no error toast |
+| Edit | `PATCH /resources/:id` | Inline banner; loading toast dismissed |
+| Collection create-and-add | `POST .../items/create-and-add` | Inline banner in modal |
+
+Shared helpers live in `src/utilis/resourceErrors.js`. Other error statuses keep existing toast/inline behavior.
+
+### **Routes overview**
+
+| Route | Auth | Description |
+|-------|------|-------------|
+| `/` | Public | Landing page |
+| `/publicResources` | Public | Community resources |
+| `/collections/public` | Public | Browse public collections |
+| `/collections/:username/:slug` | Public* | Collection detail (*private collections get `noindex`) |
+| `/resources` | Required | My resources |
+| `/createResource` | Required | Create resource (name + link) |
+| `/edit/:id` | Required | Edit resource |
+| `/bookmarks` | Required | Saved bookmarks |
+| `/documents` | Required | Document management |
+| `/collections` | Required | My collections |
+| `/collections/new` | Required | Create collection |
+| `/offline` | Public | PWA offline fallback |
+
 ### **Google OAuth Integration**
 
 Seamless authentication flow with error handling:
@@ -335,21 +387,24 @@ ResourceHub ships with first-class SEO for **public pages** and blocks indexing 
 
 Per-route metadata is applied at runtime via `usePageSeo` (`src/hooks/usePageSeo.js`) and `src/utilis/seo.js`.
 
-Set `VITE_FRONTEND_URL` in `.env` so canonical URLs, Open Graph links, and sitemap entries match your deployment domain.
+Set `VITE_FRONTEND_URL` in `.env` so runtime canonical URLs, Open Graph links, and JSON-LD match your deployment domain. Static files in `public/` (`sitemap.xml`, `robots.txt`, `llm.txt`) ship with the production domain `https://resources.lakshaymahajan.com` — update them when deploying to a different hostname.
 
 ### Static SEO files (`public/`)
 
 | File | URL | Purpose |
 | ---- | --- | ------- |
 | `sitemap.xml` | `/sitemap.xml` | Static sitemap for public landing pages |
-| `robots.txt` | `/robots.txt` | Allow public routes; disallow auth-only paths |
-| `llm.txt` | `/llm.txt` | Machine-readable site summary for LLM crawlers |
+| `robots.txt` | `/robots.txt` | Crawl rules; links sitemap and `llm.txt` |
+| `llm.txt` | `/llm.txt` | Machine-readable site summary for LLM crawlers ([llmstxt.org](https://llmstxt.org/)) |
 | `health` | `/health` | JSON health check for Docker / probes |
+| `offline.html` | `/offline.html` | PWA offline fallback (precached by service worker) |
 
 ### Crawl rules (`robots.txt`)
 
 - **Allowed**: `/`, `/publicResources`, `/collections/public`, `/collections/*/*` (public collection detail)
-- **Disallowed**: `/resources`, `/bookmarks`, `/createResource`, `/edit/`, `/documents`, `/collections/new`, `/collections` (owner list)
+- **Disallowed**: `/resources`, `/bookmarks`, `/createResource`, `/edit/`, `/documents`, `/collections/new`, `/collections` (owner list), `/offline`
+- **LLM crawlers**: `GPTBot`, `ChatGPT-User`, and `Claude-Web` may read `/llm.txt` and public indexable routes
+- **Sitemap**: declared at bottom of `robots.txt`
 
 Dynamic public collection URLs are discoverable via on-page links and client-side meta tags; add them to `sitemap.xml` manually or via a build-time script if you need full sitemap coverage.
 
@@ -361,13 +416,13 @@ Search engines that execute JavaScript will read updated `<title>`, meta, and JS
 
 ### **Environment Variables**
 
-| Variable                | Description                    | Example                                     |
+| Variable                | Description                    | Example (local dev)                         |
 | ----------------------- | ------------------------------ | ------------------------------------------- |
-| `VITE_BACKEND_URL`      | Backend API base URL           | `https://localhost:3000/api/` |
-| `VITE_AUTH_URL`         | Authentication service URL     | `https://localhost:5000/api` |
-| `VITE_FRONTEND_URL`     | Frontend URL for redirects     | `http://localhost:4000`                     |
+| `VITE_BACKEND_URL`      | Backend API base URL           | `http://localhost:3000/api`                 |
+| `VITE_AUTH_URL`         | Authentication service URL     | `http://localhost:5000/api`                 |
+| `VITE_FRONTEND_URL`     | Frontend URL (SEO, canonical)  | `http://localhost:5173`                     |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID         | `your-client-id.apps.googleusercontent.com` |
-| `VITE_DEV_MODE`         | Development mode flag          | `false`                                     |
+| `VITE_DEV_MODE`         | Development mode flag          | `true`                                      |
 
 ### **Build Configuration**
 
@@ -410,6 +465,14 @@ Separate full form, opened with existing resource values via router state:
 - Optional description (min 10 characters when provided)
 - Visibility toggle and tag management
 
+### **Collections**
+
+- **My Collections** (`/collections`): List and manage your collections
+- **Create Collection** (`/collections/new`): Name, slug, visibility, optional status labels
+- **Public browse** (`/collections/public`): Discover community collections
+- **Collection detail** (`/collections/:username/:slug`): Ordered items, drag reorder (owner), add existing or create-and-add resources
+- **Idempotency**: Collection mutations use idempotency keys to safely retry writes
+
 ### **Resource Discovery**
 
 - **Smart Search**: Search across names, descriptions, and tags (safe when description/tags are missing)
@@ -422,8 +485,8 @@ Separate full form, opened with existing resource values via router state:
 
 - **Responsive Design**: Optimized for mobile, tablet, and desktop
 - **Loading States**: Skeleton screens and elegant loading animations
-- **Error Handling**: Friendly error messages with recovery options
-- **Toast Notifications**: Non-intrusive feedback system
+- **Error Handling**: Friendly error messages with recovery options; duplicate resources (409) shown inline on forms
+- **Toast Notifications**: Non-intrusive feedback for success and non-form errors
 - **Keyboard Navigation**: Full keyboard accessibility support
 
 ### **Performance Optimizations**
@@ -494,11 +557,10 @@ For production deployment, ensure:
 ### **Development Guidelines**
 
 - Follow the existing code style and conventions
-- Use TypeScript for new components when possible
 - Write meaningful commit messages following conventional commits
 - Test your changes thoroughly across different devices
 - Update documentation when needed
-- Ensure all linting passes before submitting
+- Run `npm run lint` before submitting (note: some pre-existing lint warnings may remain)
 
 ### **Code Style**
 
@@ -525,6 +587,7 @@ For production deployment, ensure:
 
 - Check if `VITE_GOOGLE_CLIENT_ID` is correctly set
 - Ensure OAuth is configured in Google Console with correct redirect URIs
+- The auth service at `VITE_AUTH_URL` is external to this repo — local login may not complete without it
 - Verify that you're using HTTPS in production
 - Check browser console for OAuth errors
 
