@@ -1,5 +1,5 @@
 import { ExternalLink, GripVertical, Trash2, AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react';
-import { CategoryIcon } from '../../utilis/getCategoryIcon.jsx';
+import TagBadge from '../TagBadge.jsx';
 
 export default function CollectionItemRow({
   item,
@@ -38,14 +38,7 @@ export default function CollectionItemRow({
         </div>
       )}
 
-      {hasTag && (
-        <div className="absolute top-4 right-4">
-          <span className="tag tag-primary">
-            <CategoryIcon category={primaryTag} className="w-3 h-3 shrink-0" />
-            <span>{primaryTag}</span>
-          </span>
-        </div>
-      )}
+      {hasTag && <TagBadge category={primaryTag} absolute />}
 
       <div className={`flex flex-col gap-3 min-w-0 flex-1 ${isOwner ? 'pl-6' : ''} ${hasTag ? 'pr-20 sm:pr-24' : ''}`}>
         {isOwner && (
