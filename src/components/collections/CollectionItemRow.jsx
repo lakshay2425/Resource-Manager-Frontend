@@ -18,9 +18,8 @@ export default function CollectionItemRow({
   isRemoving,
 }) {
   const resource = item.resource;
-  const hasStatuses = itemStatuses?.length > 0;
-  const primaryTag = resource?.tags?.[0];
-  const hasTag = Boolean(primaryTag);
+  const itemStatus = item.status || null;
+  
 
   return (
     <article
@@ -38,9 +37,15 @@ export default function CollectionItemRow({
         </div>
       )}
 
-      {hasTag && <TagBadge category={primaryTag} absolute />}
+      {itemStatus && (
+        <TagBadge
+          category={itemStatus}
+          absolute
+          className="bg-amber-50 text-slate-800 rounded-md px-2.5 py-1"
+        />
+      )}
 
-      <div className={`flex flex-col gap-3 min-w-0 flex-1 ${isOwner ? 'pl-6' : ''} ${hasTag ? 'pr-20 sm:pr-24' : ''}`}>
+      <div className={`flex flex-col gap-3 min-w-0 flex-1 ${isOwner ? 'pl-6' : ''} ${hasStatuses ? 'pr-20 sm:pr-24' : ''}`}>
         {isOwner && (
           <div className="flex items-center justify-between gap-2 sm:hidden -ml-6">
             <span className="text-xs font-medium text-stone-500">Reorder</span>
@@ -98,7 +103,7 @@ export default function CollectionItemRow({
 
       <div className={`flex flex-col gap-2.5 shrink-0 ${hasStatuses ? 'pt-4 mt-1 border-t border-stone-100' : 'pt-3 mt-1 border-t border-stone-100'}`}>
         {hasStatuses && (
-          isOwner ? (
+          isOwner && (
             <select
               value={item.status}
               onChange={(e) => onStatusChange(item.id, e.target.value)}
@@ -111,10 +116,6 @@ export default function CollectionItemRow({
                 </option>
               ))}
             </select>
-          ) : (
-            <span className="inline-flex justify-center px-3 py-2 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium">
-              {item.status}
-            </span>
           )
         )}
 
