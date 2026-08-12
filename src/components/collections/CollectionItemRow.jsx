@@ -1,4 +1,5 @@
 import { ExternalLink, GripVertical, Trash2, AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react';
+import { CategoryIcon } from '../../utilis/getCategoryIcon.jsx';
 
 export default function CollectionItemRow({
   item,
@@ -18,6 +19,8 @@ export default function CollectionItemRow({
 }) {
   const resource = item.resource;
   const hasStatuses = itemStatuses?.length > 0;
+  const primaryTag = resource?.tags?.[0];
+  const hasTag = Boolean(primaryTag);
 
   return (
     <article
@@ -35,7 +38,16 @@ export default function CollectionItemRow({
         </div>
       )}
 
-      <div className={`flex flex-col gap-3 min-w-0 flex-1 ${isOwner ? 'pl-6' : ''}`}>
+      {hasTag && (
+        <div className="absolute top-4 right-4">
+          <span className="tag tag-primary">
+            <CategoryIcon category={primaryTag} className="w-3 h-3 shrink-0" />
+            <span>{primaryTag}</span>
+          </span>
+        </div>
+      )}
+
+      <div className={`flex flex-col gap-3 min-w-0 flex-1 ${isOwner ? 'pl-6' : ''} ${hasTag ? 'pr-20 sm:pr-24' : ''}`}>
         {isOwner && (
           <div className="flex items-center justify-between gap-2 sm:hidden -ml-6">
             <span className="text-xs font-medium text-stone-500">Reorder</span>
@@ -74,15 +86,6 @@ export default function CollectionItemRow({
             </h4>
             {resource.description?.trim() && (
               <p className="text-sm text-stone-600 leading-relaxed line-clamp-2">{resource.description}</p>
-            )}
-            {resource.tags?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {resource.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-xs">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
             )}
           </>
         ) : (
