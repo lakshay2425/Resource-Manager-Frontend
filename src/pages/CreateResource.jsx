@@ -19,6 +19,8 @@ import {
   isDuplicateResourceError,
   getDuplicateResourceMessage,
 } from '../utilis/resourceErrors.js';
+import { isPlanLimitError, getPlanLimitMessage } from '../utilis/planErrors.js';
+import PlanLimitBanner from '../components/PlanLimitBanner.jsx';
 
 const isValidUrl = (string) => {
   try {
@@ -38,6 +40,7 @@ export default function ResourceCreationForm() {
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [planLimitError, setPlanLimitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const linkInputRef = useRef(null);
@@ -57,6 +60,10 @@ export default function ResourceCreationForm() {
 
     if (submitError && (field === 'name' || field === 'link')) {
       setSubmitError('');
+    }
+
+    if (planLimitError && (field === 'name' || field === 'link')) {
+      setPlanLimitError('');
     }
   };
 
@@ -83,6 +90,7 @@ export default function ResourceCreationForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
+    setPlanLimitError('');
     if (!validateForm()) {
       toast.error("Please enter valid information before submitting.");
       return;
@@ -102,7 +110,11 @@ export default function ResourceCreationForm() {
       }
     } catch (error) {
       console.error(error.message, "Failed to create resource");
-      if (isDuplicateResourceError(error)) {
+      if (isPlanLimitError(error)) {
+        const message = getPlanLimitMessage(error);
+        setPlanLimitError(message);
+        toast.error(message);
+      } else if (isDuplicateResourceError(error)) {
         setSubmitError(getDuplicateResourceMessage(error));
       } else {
         const serverMessage = error.response?.data?.message || error.response?.data?.error;
@@ -234,6 +246,11 @@ export default function ResourceCreationForm() {
                   <p className="text-sm text-red-700">{submitError}</p>
                 </div>
               )}
+
+              <PlanLimitBanner
+                message={planLimitError}
+                onDismiss={() => setPlanLimitError('')}
+              />
 
               <button
                 type="submit"

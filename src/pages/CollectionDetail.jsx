@@ -168,26 +168,30 @@ export default function CollectionDetail() {
   };
 
   const handleCreateAndAdd = async (payload) => {
-    const result = await createAndAddItem(payload);
+    try {
+      const result = await createAndAddItem(payload);
 
-    if (result.status === 200) {
-      toast.success('Resource was already in this collection.');
-    } else {
-      toast.success('Resource created and added.');
+      if (result.status === 200) {
+        toast.success('Resource was already in this collection.');
+      } else {
+        toast.success('Resource created and added.');
+      }
+
+      if (result.item?.resource) {
+        const resource = result.item.resource;
+        const normalized = { ...resource, _id: getResourceId(resource) };
+        setResources((prev) => {
+          if (prev.some((r) => getResourceId(r) === getResourceId(normalized))) {
+            return prev;
+          }
+          return [...prev, normalized];
+        });
+      }
+
+      setShowAddModal(false);
+    } catch (err) {
+      throw err;
     }
-
-    if (result.item?.resource) {
-      const resource = result.item.resource;
-      const normalized = { ...resource, _id: getResourceId(resource) };
-      setResources((prev) => {
-        if (prev.some((r) => getResourceId(r) === getResourceId(normalized))) {
-          return prev;
-        }
-        return [...prev, normalized];
-      });
-    }
-
-    setShowAddModal(false);
   };
 
   const handleSaveCollection = async (payload) => {

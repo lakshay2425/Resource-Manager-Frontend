@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, Loader2, Search, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { newItemIdempotencyKey } from '../../utilis/idempotency.js';
 import { looksLikeUrl } from '../../utilis/collectionUrls.js';
 import { isValidUrl } from '../../utilis/tagsFunction.js';
 import { getCollectionErrorMessage } from '../../utilis/collectionErrors.js';
+import { isPlanLimitError, getPlanLimitMessage } from '../../utilis/planErrors.js';
+import PlanLimitBanner from '../PlanLimitBanner.jsx';
 import {
   isDuplicateResourceError,
   getDuplicateResourceMessage,
@@ -31,6 +34,7 @@ export default function AddItemModal({
   const [createIdempotencyKey, setCreateIdempotencyKey] = useState(() => newItemIdempotencyKey());
   const [createFieldErrors, setCreateFieldErrors] = useState({});
   const [createSubmitError, setCreateSubmitError] = useState('');
+  const [planLimitError, setPlanLimitError] = useState('');
 
   const availableResources = useMemo(
     () => resources.filter((resource) => !existingResourceIds.has(resource._id)),
@@ -83,6 +87,7 @@ export default function AddItemModal({
     setCreateUrl(isUrlLike ? trimmed : '');
     setCreateFieldErrors({});
     setCreateSubmitError('');
+    setPlanLimitError('');
     setCreateIdempotencyKey(newItemIdempotencyKey());
     setView('create');
   };
@@ -90,6 +95,7 @@ export default function AddItemModal({
   const handleCancelCreate = () => {
     setCreateFieldErrors({});
     setCreateSubmitError('');
+    setPlanLimitError('');
     setView('search');
   };
 
@@ -119,6 +125,7 @@ export default function AddItemModal({
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     setCreateSubmitError('');
+    setPlanLimitError('');
 
     if (!validateCreateForm()) return;
 
@@ -129,6 +136,12 @@ export default function AddItemModal({
         idempotency_key: createIdempotencyKey,
       });
     } catch (err) {
+      if (isPlanLimitError(err)) {
+        const message = getPlanLimitMessage(err);
+        setPlanLimitError(message);
+        toast.error(message);
+        return;
+      }
       const message = isDuplicateResourceError(err)
         ? getDuplicateResourceMessage(err)
         : getCollectionErrorMessage(err, 'Failed to create resource.');
@@ -287,6 +300,11 @@ export default function AddItemModal({
                 <p className="text-sm text-red-700">{createSubmitError}</p>
               </div>
             )}
+
+            <PlanLimitBanner
+              message={planLimitError}
+              onDismiss={() => setPlanLimitError('')}
+            />
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <button

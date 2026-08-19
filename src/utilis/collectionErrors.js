@@ -1,3 +1,5 @@
+import { getPlanLimitMessage, isPlanLimitError } from './planErrors.js';
+
 export const getCollectionErrorMessage = (error, fallback = 'Something went wrong.') => {
   const status = error?.response?.status;
   const message = error?.response?.data?.message ?? error?.response?.data?.error;
@@ -9,6 +11,9 @@ export const getCollectionErrorMessage = (error, fallback = 'Something went wron
     return message || 'Authentication required.';
   }
   if (status === 403) {
+    if (isPlanLimitError(error)) {
+      return getPlanLimitMessage(error);
+    }
     return message || 'You do not have permission for this action.';
   }
   if (status === 404) {

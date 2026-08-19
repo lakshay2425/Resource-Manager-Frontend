@@ -6,6 +6,8 @@ import { useCreateCollection } from '../hooks/useCollections.js';
 import { useEnsureLocalUser } from '../hooks/useLocalUser.js';
 import { newCollectionIdempotencyKey } from '../utilis/idempotency.js';
 import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
+import { isPlanLimitError, getPlanLimitMessage } from '../utilis/planErrors.js';
+import PlanLimitBanner from '../components/PlanLimitBanner.jsx';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
 import { getCollectionPath, formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
@@ -22,6 +24,7 @@ export default function CreateCollection() {
   const [statusInput, setStatusInput] = useState('');
   const [itemStatuses, setItemStatuses] = useState([]);
   const [useStatuses, setUseStatuses] = useState(false);
+  const [planLimitError, setPlanLimitError] = useState('');
 
   const { mutateAsync: ensureUser, isPending: isEnsuringUser } = useEnsureLocalUser();
   const { mutateAsync: createCollection, isPending: isCreating } = useCreateCollection();
@@ -69,6 +72,7 @@ export default function CreateCollection() {
     }
 
     try {
+      setPlanLimitError('');
       await ensureUser({ name: displayName, username });
 
       const result = await createCollection({
@@ -92,6 +96,12 @@ export default function CreateCollection() {
         navigate('/collections');
       }
     } catch (error) {
+      if (isPlanLimitError(error)) {
+        const message = getPlanLimitMessage(error);
+        setPlanLimitError(message);
+        toast.error(message);
+        return;
+      }
       toast.error(getCollectionErrorMessage(error, 'Failed to create collection.'));
     }
   };
@@ -202,6 +212,11 @@ export default function CreateCollection() {
                 </>
               )}
             </div>
+
+            <PlanLimitBanner
+              message={planLimitError}
+              onDismiss={() => setPlanLimitError('')}
+            />
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <Link to="/collections" className="flex-1 btn-secondary text-center justify-center">
