@@ -195,10 +195,10 @@ export default function ResourceCard({
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
+            <span className="text-white text-xs font-semibold">{getInitials(resource.email, resource.username)}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-stone-800 truncate">{ownerSubtitle === "Community Resource" ? resource.username : ownerName ?? resource.email}</p>
+            <p className="text-sm font-medium text-stone-800 truncate">{resource.username ? resource.username : ownerName ?? resource.email}</p>
             <p className="text-xs text-stone-500">{ownerSubtitle}</p>
           </div>
         </div>
