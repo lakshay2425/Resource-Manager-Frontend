@@ -198,7 +198,7 @@ export default function ResourceCard({
             <span className="text-white text-xs font-semibold">{getInitials(resource.email)}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-stone-800 truncate">{ownerName ?? resource.email}</p>
+            <p className="text-sm font-medium text-stone-800 truncate">{ownerSubtitle === "Community Resource" ? resource.username : ownerName ?? resource.email}</p>
             <p className="text-xs text-stone-500">{ownerSubtitle}</p>
           </div>
         </div>
