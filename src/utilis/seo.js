@@ -5,12 +5,12 @@ export const SITE_URL = (import.meta.env.VITE_FRONTEND_URL || 'https://resources
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/resourceManagerLogo.png`;
 
 export const DEFAULT_DESCRIPTION =
-  'Stop losing important resources in chat apps and scattered notes. ResourceHub gives you a single, organized space to save, find, and share your most valuable links.';
+  'Stop losing useful resources across chat apps, bookmarks, and notes. ResourceHub gives you one place to capture, organize, find, and share them when you are ready.';
 
 export const PUBLIC_ROUTES = {
   home: {
     path: '/',
-    title: 'ResourceHub — Keep Every Resource That Matters in One Place',
+    title: 'ResourceHub — Capture, Organize, and Find Your Resources',
     description: DEFAULT_DESCRIPTION,
   },
   publicResources: {
@@ -24,6 +24,17 @@ export const PUBLIC_ROUTES = {
     title: 'Public Collections — Curated Resource Lists | ResourceHub',
     description:
       'Explore public collections of resources organized by community members. Discover reading lists, learning paths, and themed link collections.',
+  },
+  pricing: {
+    path: '/pricing',
+    title: 'Pricing — Free & Pro Plans | ResourceHub',
+    description:
+      'Compare ResourceHub Free and Pro plans. Start organizing your resources for free — Pro features coming soon.',
+  },
+  pricingUpgrade: {
+    path: '/pricing/upgrade',
+    title: 'Upgrade to Pro | ResourceHub',
+    description: 'Choose your Pro plan duration. Billing coming soon.',
   },
 };
 

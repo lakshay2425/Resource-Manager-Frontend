@@ -244,6 +244,12 @@ const Navbar = () => {
                   <FolderOpen className="w-4 h-4" />
                   <span>Collections</span>
                 </Link>
+                <Link
+                  to="/pricing"
+                  className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  Pricing
+                </Link>
                 <button
                   onClick={() => guardWrite(() => handleGoogleLogin())}
                   disabled={writeDisabled}
@@ -365,6 +371,12 @@ const Navbar = () => {
                   >
                     <FolderOpen className="w-5 h-5" />
                     Public Collections
+                  </Link>
+                  <Link
+                    to="/pricing"
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-lg transition-colors"
+                  >
+                    Pricing
                   </Link>
                   <button
                     onClick={() => guardWrite(() => handleGoogleLogin())}

@@ -32,6 +32,8 @@ const MyCollections = lazyWithOfflineFallback(() => import('./pages/MyCollection
 const PublicCollections = lazyWithOfflineFallback(() => import('./pages/PublicCollections.jsx'))
 const CreateCollection = lazyWithOfflineFallback(() => import('./pages/CreateCollection.jsx'))
 const CollectionDetail = lazyWithOfflineFallback(() => import('./pages/CollectionDetail.jsx'))
+const Pricing = lazyWithOfflineFallback(() => import('./pages/Pricing.jsx'))
+const PricingUpgrade = lazyWithOfflineFallback(() => import('./pages/PricingUpgrade.jsx'))
 
 function App() {
 
@@ -80,6 +82,8 @@ function App() {
               <Route path="/offline" element={<Offline />} />
               <Route path="/" element={<Home />} />
               <Route path="/publicResources" element={<PublicResources />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/pricing/upgrade" element={<PricingUpgrade />} />
               <Route
                 path="/bookmarks"
                 element={
