@@ -14,12 +14,12 @@ export default function ResourceManagerLanding() {
     <main className="min-h-screen bg-stone-50">
       <HeroSection />
 
-      <section id='features'>
-        <Features />
+      <section id="why-us">
+        <WhyRH />
       </section>
 
-      <section id='why-us'>
-        <WhyRH />
+      <section id="features">
+        <Features />
       </section>
     </main>
   );

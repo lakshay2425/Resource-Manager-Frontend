@@ -1,4 +1,4 @@
-import { MessageSquare, Zap, Users, CheckCircle2, ArrowRight } from 'lucide-react';
+import { MessageSquare, Bookmark, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
@@ -12,34 +12,39 @@ const WhyRH = () => {
     const problems = [
         {
             icon: MessageSquare,
-            title: "Links get buried in chat",
-            description: "Someone shared a great resource in the group chat three weeks ago. Good luck finding it between the memes and meeting updates."
+            title: "Useful links get buried in chat",
+            description: "A great resource shared in WhatsApp or Slack disappears between memes, updates, and everyday messages."
         },
         {
-            icon: Zap,
+            icon: Bookmark,
             title: "Bookmarks become a mess",
-            description: "Browser bookmarks start organized, then turn into a graveyard of hundreds of unsorted links you'll never look at again."
+            description: "Browser bookmarks start organized, then turn into hundreds of unsorted links that are hard to search through."
         },
         {
-            icon: Users,
-            title: "No way to share selectively",
-            description: "Some links are for everyone, others are just for you. Most tools force you to choose one or the other."
+            icon: FileText,
+            title: "Saves spread across tools",
+            description: "Notes apps and email drafts hold resources too — so nothing lives in one searchable place."
         }
+    ];
+
+    const benefits = [
+        "Capture resources quickly",
+        "Organize into collections",
+        "Tag for flexible filtering",
+        "Search across your library",
+        "Share resources or collections publicly when you want",
     ];
 
     return (
         <section className="py-20 sm:py-28 relative overflow-hidden">
-            {/* Background with pattern */}
             <div className="absolute inset-0 bg-stone-900" />
             <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
 
-            {/* Decorative Elements */}
             <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-slate-800/20 to-transparent" />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-                    {/* Left Content - Problems */}
                     <div>
                         <span className="inline-block text-sm font-medium text-amber-400 mb-4 tracking-wide uppercase">
                             The Problem
@@ -48,8 +53,8 @@ const WhyRH = () => {
                             Your best resources are scattered across a dozen apps
                         </h2>
                         <p className="text-stone-400 text-lg mb-10 leading-relaxed">
-                            You have valuable links saved in WhatsApp, Slack, browser bookmarks, notes apps, and email drafts.
-                            When you actually need them, they're impossible to find.
+                            People save useful resources across WhatsApp, Slack, browser bookmarks, notes apps,
+                            email drafts, and other scattered places. When you need them later, finding them is difficult.
                         </p>
 
                         <div className="space-y-6">
@@ -74,9 +79,7 @@ const WhyRH = () => {
                         </div>
                     </div>
 
-                    {/* Right Content - Solution */}
                     <div className="relative">
-                        {/* Solution Card */}
                         <div className="bg-stone-800/50 backdrop-blur-sm rounded-2xl p-8 sm:p-10 border border-stone-700/50">
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 rounded-full mb-6">
                                 <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
@@ -87,19 +90,18 @@ const WhyRH = () => {
                                 One place for everything that matters
                             </h3>
 
-                            <p className="text-stone-400 mb-8 leading-relaxed">
-                                ResourceHub gives you a single, organized home for all your links.
-                                Save, tag, search, and optionally share with the community.
+                            <p className="text-stone-400 mb-4 leading-relaxed">
+                                ResourceHub lets you capture resources quickly, organize them into collections,
+                                add tags, search across your saved resources, and decide what to share publicly.
                             </p>
 
-                            {/* Benefits Checklist */}
+                            <p className="text-stone-400 mb-8 leading-relaxed text-[0.9375rem]">
+                             Link-sharing tools are built for publishing. ResourceHub is built for managing the resources you collect.
+                             Capture → Organize → Find → Share.
+                            </p>
+
                             <ul className="space-y-3 mb-8">
-                                {[
-                                    "Works with any URL",
-                                    "Powerful tag-based organization",
-                                    "Lightning-fast search",
-                                    "Private by default, shareable when you want"
-                                ].map((benefit, index) => (
+                                {benefits.map((benefit, index) => (
                                     <li key={index} className="flex items-center gap-3 text-stone-300">
                                         <CheckCircle2 className="w-5 h-5 text-amber-400 flex-shrink-0" />
                                         <span className="text-[0.9375rem]">{benefit}</span>
@@ -107,7 +109,6 @@ const WhyRH = () => {
                                 ))}
                             </ul>
 
-                            {/* CTA */}
                             <button
                                 onClick={() => isAuthenticated ? navigate("/createResource") : handleGoogleLogin()}
                                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-all duration-200 group"
@@ -117,7 +118,6 @@ const WhyRH = () => {
                             </button>
                         </div>
 
-                        {/* Floating decoration */}
                         <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-slate-500/20 to-amber-500/10 rounded-full blur-2xl" />
                     </div>
                 </div>
