@@ -1,33 +1,20 @@
 import { Link } from 'react-router-dom';
-import { FolderOpen, Loader2, AlertCircle } from 'lucide-react';
+import { FolderOpen, Loader2 } from 'lucide-react';
 import CollectionCard from '../components/collections/CollectionCard.jsx';
+import PublicListErrorState from '../components/PublicListErrorState.jsx';
 import { usePublicCollections } from '../hooks/useCollections.js';
-import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { PUBLIC_ROUTES } from '../utilis/seo.js';
 
 export default function PublicCollections() {
   usePageSeo(PUBLIC_ROUTES.publicCollections);
 
-  const { data: collections = [], isLoading, isError, error, refetch, isFetching } = usePublicCollections();
+  const { data: collections = [], isLoading, isError, refetch, isFetching } = usePublicCollections();
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-slate-700 animate-spin" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-stone-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-stone-900 mb-2">Failed to load public collections</h2>
-          <p className="text-stone-600 mb-6">{getCollectionErrorMessage(error)}</p>
-          <button type="button" onClick={() => refetch()} className="btn-primary">Try again</button>
-        </div>
       </div>
     );
   }
@@ -53,7 +40,14 @@ export default function PublicCollections() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
-        {collections.length === 0 ? (
+        {isError ? (
+          <PublicListErrorState
+            title="Unable to load public collections"
+            description="We couldn't load the public collections right now. Please try again."
+            onRetry={() => refetch()}
+            isRetrying={isFetching}
+          />
+        ) : collections.length === 0 ? (
           <div className="text-center py-12 sm:py-16 px-4 bg-white rounded-xl border border-stone-200">
             <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="w-8 h-8 text-stone-400" />

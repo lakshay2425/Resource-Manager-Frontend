@@ -1,8 +1,9 @@
-import { useState, useEffect, useContext, } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { Search, Globe, X, Grid, List, Loader2 } from 'lucide-react';
 import axiosInstance from "../utilis/Axios.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import ResourceCard from "../components/ResourceCard.jsx";
+import PublicListErrorState from "../components/PublicListErrorState.jsx";
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { PUBLIC_ROUTES } from '../utilis/seo.js';
 
@@ -16,33 +17,37 @@ export default function PublicResourcesPage() {
   const [viewMode, setViewMode] = useState('grid');
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const { isAuthenticated } = useContext(AuthContext);
   const [bookMarkedResourcesId, setBookMarkedResourcesId] = useState([]);
 
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+  const fetchPublicResources = useCallback(async (isRetry = false) => {
+    try {
+      setFetchError(false);
+      if (isRetry) {
+        setIsRefetching(true);
+      } else {
         setIsLoading(true);
-        const response = await axiosInstance.get("/resources/publicResources");
-        setResources(response.data.data || []);
-        setFilteredResources(response.data.data || []);
-      } catch (error) {
-        console.error('Error fetching resources:', error);
-        setResources([]);
-        setFilteredResources([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
-    fetchData();
+      const response = await axiosInstance.get("/resources/publicResources");
+      setResources(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+      setFetchError(true);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
   }, []);
 
-  // Get unique categories from resources
+  useEffect(() => {
+    fetchPublicResources();
+  }, [fetchPublicResources]);
+
   const categories = ['All', ...new Set(resources.flatMap(resource => resource.tags || []))];
 
-  // Handle bookmark change - update the local state when bookmark status changes
   const handleBookmarkChange = (resourceId, isBookmarked) => {
     setBookMarkedResourcesId((prev) =>
       isBookmarked
@@ -75,7 +80,6 @@ export default function PublicResourcesPage() {
     if (isAuthenticated) getBookMarkedResourcesId();
   }, [isAuthenticated]);
 
-  // Filter and sort resources
   useEffect(() => {
     let filtered = resources.filter(resource => {
       const tags = resource.tags || [];
@@ -92,7 +96,6 @@ export default function PublicResourcesPage() {
       return matchesSearch && matchesCategory;
     });
 
-    // Sort resources
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'recent':
@@ -107,7 +110,6 @@ export default function PublicResourcesPage() {
     setFilteredResources(filtered);
   }, [resources, searchTerm, selectedCategory, sortBy]);
 
-  // Loading State
   if (isLoading) {
     return (
       <div className="min-h-screen bg-stone-50">
@@ -123,7 +125,6 @@ export default function PublicResourcesPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Header */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -138,17 +139,17 @@ export default function PublicResourcesPage() {
 
             <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-slate-800 rounded-full">
               <Globe className="w-4 h-4" />
-              <span className="text-sm font-medium">{resources.length} Public Resources</span>
+              <span className="text-sm font-medium">
+                {fetchError ? '—' : `${resources.length} Public Resources`}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Search and Filters */}
         <div className="bg-white rounded-xl border border-stone-200 p-4 sm:p-6 mb-6">
           <div className="space-y-4">
-            {/* Search Bar */}
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400" />
               <input
@@ -160,9 +161,7 @@ export default function PublicResourcesPage() {
               />
             </div>
 
-            {/* Filters Row */}
             <div className="flex flex-col sm:flex-row gap-3">
-              {/* Category Filter */}
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -173,7 +172,6 @@ export default function PublicResourcesPage() {
                 ))}
               </select>
 
-              {/* Sort Filter */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -183,7 +181,6 @@ export default function PublicResourcesPage() {
                 <option value="alphabetical">Alphabetical</option>
               </select>
 
-              {/* View Mode Toggle */}
               <div className="flex bg-stone-100 rounded-lg p-1 sm:ml-auto">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -202,8 +199,7 @@ export default function PublicResourcesPage() {
           </div>
         </div>
 
-        {/* Active Filters Info */}
-        {(searchTerm || selectedCategory !== 'All') && (
+        {(searchTerm || selectedCategory !== 'All') && !fetchError && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2 text-slate-800">
@@ -228,9 +224,14 @@ export default function PublicResourcesPage() {
           </div>
         )}
 
-
-        {/* Resources Grid/List */}
-        {filteredResources.length > 0 ? (
+        {fetchError ? (
+          <PublicListErrorState
+            title="Unable to load public resources"
+            description="We couldn't load the community resources right now. Please try again."
+            onRetry={() => fetchPublicResources(true)}
+            isRetrying={isRefetching}
+          />
+        ) : filteredResources.length > 0 ? (
           <div className={viewMode === 'grid'
             ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start"
             : "space-y-4"
