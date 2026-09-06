@@ -1,6 +1,6 @@
 export const PLAN_COMPARISON_ROWS = [
-  { feature: 'Resources', free: 'Up to 50', pro: 'Unlimited', type: 'text' },
-  { feature: 'Collections', free: 'Up to 5', pro: 'Unlimited', type: 'text' },
+  { feature: 'Resources', free: 'Up to 200', pro: 'Unlimited', type: 'text' },
+  { feature: 'Collections', free: 'Up to 20', pro: 'Unlimited', type: 'text' },
   { feature: 'Public collections', free: true, pro: true, type: 'bool' },
   { feature: 'Dynamic OG meta preview', free: true, pro: true, type: 'bool' },
   { feature: 'Document management', free: 'Up to 2', pro: 'Up to 10', type: 'text' },
@@ -9,8 +9,8 @@ export const PLAN_COMPARISON_ROWS = [
 ];
 
 export const FREE_PLAN_HIGHLIGHTS = [
-  'Up to 5 collections',
-  'Up to 50 resources',
+  'Up to 20 collections',
+  'Up to 200 resources',
   'No collection analytics',
   'No priority support',
 ];
