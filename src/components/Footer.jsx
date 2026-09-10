@@ -3,7 +3,11 @@ import { Layers, Github, Twitter, Mail, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useSectionNavigation from '../hooks/useNavigation.js';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { discoverLinks, myLibraryFooterLinks } from '../utilis/navLinks.js';
+import {
+  buildInPublicCollection,
+  discoverLinks,
+  myLibraryFooterLinks,
+} from '../utilis/navLinks.js';
 
 const Footer = () => {
   const navigateToSection = useSectionNavigation();
@@ -56,7 +60,7 @@ const Footer = () => {
                   <Twitter className="w-5 h-5" />
                 </a>
                 <a
-                  href="mailto:lakshay12290@gmail.com"
+                  href="mailto:dev@lakshaymahajan.com"
                   className="w-10 h-10 rounded-lg bg-stone-800 hover:bg-stone-700 flex items-center justify-center transition-colors"
                   aria-label="Email"
                 >
@@ -94,6 +98,14 @@ const Footer = () => {
                     className="text-stone-400 hover:text-white transition-colors text-sm"
                   >
                     Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={buildInPublicCollection.href}
+                    className="text-stone-400 hover:text-white transition-colors text-sm"
+                  >
+                    {buildInPublicCollection.label}
                   </Link>
                 </li>
               </ul>

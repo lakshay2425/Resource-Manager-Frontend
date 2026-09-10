@@ -7,6 +7,13 @@ import {
   PlusCircle,
 } from 'lucide-react';
 
+export const buildInPublicCollection = {
+  href: '/collections/lakshay-mahajan/resource-hub-build-in-public-series',
+  label: 'Build in public series',
+  heroLabel: 'Follow the build',
+  pricingNote: 'We build in public — see the series',
+};
+
 export const discoverLinks = [
   {
     href: '/publicResources',

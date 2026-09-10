@@ -5,6 +5,7 @@ import { useGoogleAuth } from '../hooks/useGoogleOAuth.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { PUBLIC_ROUTES } from '../utilis/seo.js';
 import { FREE_PLAN_HIGHLIGHTS, PRO_PLAN_HIGHLIGHTS } from '../constants/planFeatures.js';
+import { buildInPublicCollection } from '../utilis/navLinks.js';
 import PlanCard from '../components/pricing/PlanCard.jsx';
 import PlanComparisonTable from '../components/pricing/PlanComparisonTable.jsx';
 
@@ -26,6 +27,14 @@ export default function Pricing() {
           </h1>
           <p className="text-stone-600 mt-1 text-sm sm:text-base">
             Start organizing your resources for free. Pro features are coming soon.
+          </p>
+          <p className="mt-3 text-sm sm:text-base">
+            <Link
+              to={buildInPublicCollection.href}
+              className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
+            >
+              {buildInPublicCollection.pricingNote} →
+            </Link>
           </p>
         </div>
       </div>

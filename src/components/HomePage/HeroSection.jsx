@@ -5,9 +5,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useGoogleAuth } from "../../hooks/useGoogleOAuth.js"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
+import { buildInPublicCollection } from '../../utilis/navLinks.js';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -97,6 +98,16 @@ const HeroSection = () => {
                 Browse community resources
               </button>
             </div>
+
+            <p className="mt-5 text-center lg:text-left">
+              <Link
+                to={buildInPublicCollection.href}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors"
+              >
+                {buildInPublicCollection.heroLabel}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </p>
           </div>
 
           <div className="lg:col-span-5 order-1 lg:order-2">
