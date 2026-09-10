@@ -379,7 +379,7 @@ const Navbar = () => {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-stone-200 shadow-lg animate-fade-in-up">
+          <div className="md:hidden absolute top-full left-0 right-0 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-white border-b border-stone-200 shadow-lg animate-fade-in-up">
             <div className="px-4 py-4 space-y-1">
               {isAuthenticated ? (
                 <>
