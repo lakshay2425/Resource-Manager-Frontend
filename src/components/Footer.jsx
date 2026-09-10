@@ -1,26 +1,33 @@
+import { useContext } from 'react';
 import { Layers, Github, Twitter, Mail, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useSectionNavigation from '../hooks/useNavigation.js';
+import { AuthContext } from '../context/AuthContext.jsx';
+import { discoverLinks, myLibraryFooterLinks } from '../utilis/navLinks.js';
 
 const Footer = () => {
   const navigateToSection = useSectionNavigation();
+  const { isAuthenticated } = useContext(AuthContext);
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-stone-900 text-stone-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-
-            {/* Brand Column */}
+          <div
+            className={`grid md:grid-cols-2 gap-10 lg:gap-8 ${
+              isAuthenticated ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
+            }`}
+          >
             <div className="lg:col-span-2">
               <Link to="/" className="inline-flex items-center gap-2.5 mb-5">
                 <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
                   <Layers className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+                <span
+                  className="text-xl font-bold text-white"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
                   ResourceHub
                 </span>
               </Link>
@@ -29,7 +36,6 @@ const Footer = () => {
                 Keep everything organized in one searchable, accessible place.
               </p>
 
-              {/* Social Links */}
               <div className="flex items-center gap-3">
                 <a
                   href="https://github.com/lakshay2425"
@@ -59,7 +65,6 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Navigation Column */}
             <div>
               <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
                 Navigation
@@ -67,7 +72,8 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li>
                   <button
-                    onClick={() => navigateToSection("features")}
+                    type="button"
+                    onClick={() => navigateToSection('features')}
                     className="text-stone-400 hover:text-white transition-colors text-sm"
                   >
                     Features
@@ -75,7 +81,8 @@ const Footer = () => {
                 </li>
                 <li>
                   <button
-                    onClick={() => navigateToSection("why-us")}
+                    type="button"
+                    onClick={() => navigateToSection('why-us')}
                     className="text-stone-400 hover:text-white transition-colors text-sm"
                   >
                     Why ResourceHub
@@ -89,53 +96,49 @@ const Footer = () => {
                     Pricing
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/publicResources"
-                    className="text-stone-400 hover:text-white transition-colors text-sm"
-                  >
-                    Explore Resources
-                  </Link>
-                </li>
               </ul>
             </div>
 
-            {/* Resources Column */}
             <div>
               <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-                Resources
+                Discover
               </h3>
               <ul className="space-y-3">
-                <li>
-                  <Link
-                    to="/createResource"
-                    className="text-stone-400 hover:text-white transition-colors text-sm"
-                  >
-                    Add a Resource
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/resources"
-                    className="text-stone-400 hover:text-white transition-colors text-sm"
-                  >
-                    My Resources
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/bookmarks"
-                    className="text-stone-400 hover:text-white transition-colors text-sm"
-                  >
-                    Saved Bookmarks
-                  </Link>
-                </li>
+                {discoverLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      to={link.href}
+                      className="text-stone-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
+
+            {isAuthenticated && (
+              <div>
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                  My Library
+                </h3>
+                <ul className="space-y-3">
+                  {myLibraryFooterLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        to={link.href}
+                        className="text-stone-400 hover:text-white transition-colors text-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="py-6 border-t border-stone-800">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-stone-500 text-sm">
