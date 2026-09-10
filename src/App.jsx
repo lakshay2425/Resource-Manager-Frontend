@@ -1,15 +1,9 @@
 import { useEffect, useContext, Suspense, lazy } from 'react'
-
 import { Routes, Route } from 'react-router-dom'
-
 import { AuthContext } from './context/AuthContext.jsx'
-
 import Offline from './pages/Offline.jsx'
-
 import RouteErrorBoundary from './components/RouteErrorBoundary.jsx'
-
 import { lazyWithOfflineFallback, registerOfflineChunkHandler } from './utilis/lazyWithOfflineFallback.js'
-
 
 
 const EditResource = lazyWithOfflineFallback(() => import('./pages/EditResource.jsx'))
@@ -36,7 +30,6 @@ const Pricing = lazyWithOfflineFallback(() => import('./pages/Pricing.jsx'))
 const PricingUpgrade = lazyWithOfflineFallback(() => import('./pages/PricingUpgrade.jsx'))
 
 function App() {
-
   useEffect(() => {
     const preventDefault = (e) => {
       e.preventDefault();
@@ -57,21 +50,11 @@ function App() {
     };
 
   }, []);
-
-
-
   useEffect(() => registerOfflineChunkHandler(), []);
-
-
-
   const { isAuthenticated } = useContext(AuthContext);
 
-
-
   return (
-
     <>
-
       <LoadingScreen>
         <OfflineBanner />
         <Navbar />
@@ -106,7 +89,6 @@ function App() {
                   />
                 }
               />
-
               <Route
                 path="/resources"
                 element={
@@ -118,9 +100,6 @@ function App() {
                   />
                 }
               />
-
-
-
               <Route
                 path="/edit/:id"
                 element={
@@ -132,7 +111,6 @@ function App() {
                   />
                 }
               />
-
               <Route
                 path="/documents"
                 element={
@@ -144,7 +122,6 @@ function App() {
                   />
                 }
               />
-
               <Route path="/collections/public" element={<PublicCollections />} />
               <Route
                 path="/collections/new"
@@ -155,13 +132,10 @@ function App() {
                     fallback="/"
                     errorMessage="You need to login to access this page"
                   />
-
                 }
-
               />
 
               <Route path="/collections/:username/:slug" element={<CollectionDetail />} />
-
               <Route
                 path="/collections"
                 element={
@@ -173,7 +147,6 @@ function App() {
                   />
                 }
               />
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -182,9 +155,7 @@ function App() {
         <InstallPrompt />
       </LoadingScreen>
     </>
-
   );
-
 }
 
 

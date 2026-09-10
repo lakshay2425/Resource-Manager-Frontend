@@ -168,22 +168,6 @@ export default function AllResourcesPage() {
                 </h1>
                 <p className="text-stone-600 mt-1">Manage your private and public resources</p>
               </div>
-
-              {/* Stats */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-2 bg-stone-100 rounded-lg">
-                  <Layers className="w-4 h-4 text-stone-500" />
-                  <span className="text-sm font-medium text-stone-700">{stats.totalCount} Total</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 bg-stone-100 rounded-lg">
-                  <Lock className="w-4 h-4 text-stone-500" />
-                  <span className="text-sm font-medium text-stone-700">{stats.privateCount} Private</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg">
-                  <Globe className="w-4 h-4 text-slate-700" />
-                  <span className="text-sm font-medium text-slate-800">{stats.publicCount} Public</span>
-                </div>
-              </div>
             </div>
 
             {/* Tabs */}
