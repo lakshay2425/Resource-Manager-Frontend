@@ -1,18 +1,28 @@
 import { Link } from 'react-router-dom';
-import { FolderOpen, Globe, Lock, Layers } from 'lucide-react';
+import { FolderOpen, Globe, Lock, Layers, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { getCollectionPath, formatUsernameForUrl } from '../../utilis/collectionUrls.js';
 
-export default function CollectionCard({ collection, showOwner = false, ownerUsername }) {
+export default function CollectionCard({
+  collection,
+  showOwner = false,
+  ownerUsername,
+  canReorder = false,
+  isFirst = false,
+  isLast = false,
+  isReordering = false,
+  onMoveUp,
+  onMoveDown,
+  onDragStart,
+  onDragOver,
+  onDrop,
+}) {
   const isPublic = collection.visibility === 'public';
   const username = formatUsernameForUrl(ownerUsername ?? collection.owner?.username ?? collection.owner?.name);
   const slug = collection.slug;
   const href = username && slug ? getCollectionPath(username, slug) : '/collections';
 
-  return (
-    <Link
-      to={href}
-      className="group block bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6 active:bg-stone-50"
-    >
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
           <FolderOpen className="w-5 h-5 text-indigo-600" />
@@ -59,6 +69,76 @@ export default function CollectionCard({ collection, showOwner = false, ownerUse
           </span>
         </p>
       )}
-    </Link>
+    </>
+  );
+
+  if (!canReorder) {
+    return (
+      <Link
+        to={href}
+        className="group block bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6 active:bg-stone-50"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      className="group bg-white rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300"
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver?.(e, collection.id);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop?.(e, collection.id);
+      }}
+    >
+      <div className="flex items-center justify-between gap-2 px-4 sm:px-6 pt-4">
+        <button
+          type="button"
+          draggable={!isReordering}
+          disabled={isReordering}
+          onDragStart={(e) => {
+            e.dataTransfer.setData('text/plain', collection.id);
+            e.dataTransfer.effectAllowed = 'move';
+            onDragStart?.(e, collection.id);
+          }}
+          className="inline-flex items-center justify-center p-1.5 text-stone-400 hover:text-stone-600 rounded-md disabled:opacity-40 cursor-grab active:cursor-grabbing"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="w-5 h-5" />
+        </button>
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            onClick={() => onMoveUp?.(collection.id)}
+            disabled={isFirst || isReordering}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium border border-stone-200 rounded-lg disabled:opacity-40 hover:bg-stone-50"
+            aria-label="Move up"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+            Up
+          </button>
+          <button
+            type="button"
+            onClick={() => onMoveDown?.(collection.id)}
+            disabled={isLast || isReordering}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium border border-stone-200 rounded-lg disabled:opacity-40 hover:bg-stone-50"
+            aria-label="Move down"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+            Down
+          </button>
+        </div>
+      </div>
+      <Link
+        to={href}
+        className="block p-4 sm:p-6 pt-3 active:bg-stone-50 rounded-b-xl"
+      >
+        {body}
+      </Link>
+    </div>
   );
 }
