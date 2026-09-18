@@ -11,6 +11,7 @@ import {
   updateCollectionItemStatus,
   deleteCollectionItem,
   reorderCollectionItems,
+  reorderMyCollections,
 } from '../api/collectionsApi';
 import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
@@ -206,6 +207,46 @@ export const useReorderCollectionItems = (collectionId, detailQueryKey) => {
       if (detailQueryKey) {
         queryClient.invalidateQueries({ queryKey: detailQueryKey });
       }
+    },
+  });
+};
+
+const compareCollectionOrder = (a, b) =>
+  (a.order_index ?? 0) - (b.order_index ?? 0) ||
+  String(b.created_at ?? '').localeCompare(String(a.created_at ?? ''));
+
+export const useReorderMyCollections = () => {
+  const queryClient = useQueryClient();
+  const queryKey = collectionKeys.mine();
+
+  return useMutation({
+    mutationFn: (items) => reorderMyCollections(items),
+    onMutate: async (items) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData(queryKey);
+
+      if (previous) {
+        const orderMap = new Map(items.map(({ id, order_index }) => [id, order_index]));
+        const next = [...previous]
+          .map((collection) =>
+            orderMap.has(collection.id)
+              ? { ...collection, order_index: orderMap.get(collection.id) }
+              : collection
+          )
+          .sort(compareCollectionOrder);
+
+        queryClient.setQueryData(queryKey, next);
+      }
+
+      return { previous };
+    },
+    onError: (_error, _items, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 };

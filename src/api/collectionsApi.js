@@ -75,3 +75,8 @@ export const reorderCollectionItems = async (collectionId, items) => {
   );
   return data.updated;
 };
+
+export const reorderMyCollections = async (items) => {
+  const { data } = await axiosInstance.patch('/collections/reorder', { items });
+  return data.updated;
+};
