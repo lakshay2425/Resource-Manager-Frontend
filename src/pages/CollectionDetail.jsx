@@ -17,6 +17,7 @@ import { AuthContext } from '../context/AuthContext.jsx';
 import CollectionItemRow from '../components/collections/CollectionItemRow.jsx';
 import EditCollectionModal from '../components/collections/EditCollectionModal.jsx';
 import AddItemModal from '../components/collections/AddItemModal.jsx';
+import ShareCollectionButton from '../components/collections/ShareCollectionButton.jsx';
 import {
   collectionKeys,
   useCollectionBySlug,
@@ -30,7 +31,7 @@ import {
   useReorderCollectionItems,
 } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
-import { getCollectionPath, getResourceId, formatUsernameForUrl } from '../utilis/collectionUrls.js';
+import { getCollectionPath, getCollectionShareUrl, getResourceId, formatUsernameForUrl } from '../utilis/collectionUrls.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { buildPageTitle, getCollectionJsonLd, SITE_NAME } from '../utilis/seo.js';
 
@@ -367,32 +368,42 @@ export default function CollectionDetail() {
               )}
             </div>
 
-            {isOwner && (
+            {(isOwner || isPublic) && (
               <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(true)}
-                  className="btn-primary w-full sm:w-auto justify-center"
-                >
-                  <Plus className="w-4 h-4 shrink-0" />
-                  <span className="truncate">Add resource</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(true)}
-                  className="btn-secondary w-full sm:w-auto justify-center"
-                >
-                  <Pencil className="w-4 h-4 shrink-0" />
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteModal(true)}
-                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 border border-red-200 text-red-700 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors"
-                >
-                  <Trash2 className="w-4 h-4 shrink-0" />
-                  Delete
-                </button>
+                {isPublic && shareUsername && collection.slug && (
+                  <ShareCollectionButton
+                    shareUrl={getCollectionShareUrl(shareUsername, collection.slug)}
+                    collectionName={collection.name}
+                  />
+                )}
+                {isOwner && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(true)}
+                      className="btn-primary w-full sm:w-auto justify-center"
+                    >
+                      <Plus className="w-4 h-4 shrink-0" />
+                      <span className="truncate">Add resource</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowEditModal(true)}
+                      className="btn-secondary w-full sm:w-auto justify-center"
+                    >
+                      <Pencil className="w-4 h-4 shrink-0" />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteModal(true)}
+                      className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 border border-red-200 text-red-700 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 shrink-0" />
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

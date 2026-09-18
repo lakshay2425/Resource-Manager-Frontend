@@ -26,6 +26,14 @@ export const isValidUsername = (value) =>
 export const getCollectionPath = (username, slug) =>
   `/collections/${formatUsernameForUrl(username)}/${slug}`;
 
+export const getCollectionShareUrl = (username, slug) => {
+  const path = getCollectionPath(username, slug);
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}${path}`;
+  }
+  return path;
+};
+
 export const getResourceId = (resource) => resource?._id ?? resource?.id;
 
 export const looksLikeUrl = (query) => {
