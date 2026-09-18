@@ -7,8 +7,6 @@ import {
   LogOut,
   ChevronDown,
   PlusCircle,
-  ExternalLink,
-  FolderOpen,
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -26,62 +24,11 @@ import {
 } from '../utilis/navLinks.js';
 import profileImage from './profileImagePlaceholder.png';
 
-function NavDropdown({ label, links, isOpen, onToggle, onClose, isActive, menuRef, pathname }) {
-  return (
-    <div className="relative" ref={menuRef}>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-          isActive
-            ? 'bg-amber-50 text-slate-800'
-            : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-        }`}
-      >
-        <span>{label}</span>
-        <ChevronDown
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1 animate-scale-in origin-top-left z-50">
-          {links.map((link) => {
-            const IconComponent = link.icon;
-            const active = isNavLinkActive(pathname, link.href);
-            return (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                  active
-                    ? 'bg-amber-50 text-slate-800'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
-                }`}
-                title={link.description}
-              >
-                <IconComponent className="w-4 h-4 shrink-0" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [isDiscoverOpen, setIsDiscoverOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const profileRef = useRef(null);
-  const libraryRef = useRef(null);
-  const discoverRef = useRef(null);
   const [user, setUser] = useLocalStorageState('userInfo', null);
   const { setIsAuthenticated, isAuthenticated, setGmail, gmail } = useContext(AuthContext);
   const { handleGoogleLogin } = useGoogleAuth();
@@ -93,27 +40,8 @@ const Navbar = () => {
   const { guardWrite, writeDisabled } = useOfflineGuard();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleProfile = () => {
-    setIsProfileOpen(!isProfileOpen);
-    setIsLibraryOpen(false);
-    setIsDiscoverOpen(false);
-  };
-  const toggleLibrary = () => {
-    setIsLibraryOpen(!isLibraryOpen);
-    setIsDiscoverOpen(false);
-    setIsProfileOpen(false);
-  };
-  const toggleDiscover = () => {
-    setIsDiscoverOpen(!isDiscoverOpen);
-    setIsLibraryOpen(false);
-    setIsProfileOpen(false);
-  };
-
-  const closeDropdowns = () => {
-    setIsLibraryOpen(false);
-    setIsDiscoverOpen(false);
-    setIsProfileOpen(false);
-  };
+  const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
+  const closeProfile = () => setIsProfileOpen(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -128,12 +56,6 @@ const Navbar = () => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
       }
-      if (libraryRef.current && !libraryRef.current.contains(event.target)) {
-        setIsLibraryOpen(false);
-      }
-      if (discoverRef.current && !discoverRef.current.contains(event.target)) {
-        setIsDiscoverOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -142,8 +64,6 @@ const Navbar = () => {
 
   useEffect(() => {
     setIsMenuOpen(false);
-    setIsLibraryOpen(false);
-    setIsDiscoverOpen(false);
     setIsProfileOpen(false);
   }, [location]);
 
@@ -159,15 +79,21 @@ const Navbar = () => {
       setGmail('');
       navigate('/');
       toast.success('Logged out successfully');
-      closeDropdowns();
+      closeProfile();
     }
   };
 
   const isPricingActive = location.pathname === '/pricing';
   const libraryActive = isNavGroupActive(location.pathname, myLibraryLinks);
-  const discoverActive = isNavGroupActive(location.pathname, discoverLinks);
 
-  const navLinkClass = (active) =>
+  const desktopLinkClass = (active) =>
+    `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+      active
+        ? 'bg-amber-50 text-slate-800'
+        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+    }`;
+
+  const mobileLinkClass = (active) =>
     `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
       active
         ? 'bg-amber-50 text-slate-800'
@@ -181,23 +107,56 @@ const Navbar = () => {
         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
     }`;
 
-  const renderMobileLinkGroup = (title, links) => (
-    <div className="pt-2 first:pt-0">
-      <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-stone-400">
-        {title}
-      </p>
-      {links.map((link) => {
-        const IconComponent = link.icon;
-        const isActive = isNavLinkActive(location.pathname, link.href);
-        return (
-          <Link key={link.href} to={link.href} className={navLinkClass(isActive)}>
-            <IconComponent className="w-5 h-5 shrink-0" />
-            <span>{link.label}</span>
-          </Link>
-        );
-      })}
-    </div>
-  );
+  const renderDesktopDiscoverLinks = () =>
+    discoverLinks.map((link) => {
+      const IconComponent = link.icon;
+      const isActive = isNavLinkActive(location.pathname, link.href);
+      return (
+        <Link
+          key={link.href}
+          to={link.href}
+          className={desktopLinkClass(isActive)}
+          title={link.description}
+        >
+          <IconComponent className="w-4 h-4 shrink-0" />
+          <span>{link.label}</span>
+        </Link>
+      );
+    });
+
+  const renderMobileDiscoverLinks = () =>
+    discoverLinks.map((link) => {
+      const IconComponent = link.icon;
+      const isActive = isNavLinkActive(location.pathname, link.href);
+      return (
+        <Link key={link.href} to={link.href} className={mobileLinkClass(isActive)}>
+          <IconComponent className="w-5 h-5 shrink-0" />
+          <span>{link.label}</span>
+        </Link>
+      );
+    });
+
+  const renderProfileLibraryLinks = (onNavigate) =>
+    myLibraryLinks.map((link) => {
+      const IconComponent = link.icon;
+      const isActive = isNavLinkActive(location.pathname, link.href);
+      return (
+        <Link
+          key={link.href}
+          to={link.href}
+          onClick={onNavigate}
+          className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+            isActive
+              ? 'bg-amber-50 text-slate-800'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+          }`}
+          title={link.description}
+        >
+          <IconComponent className="w-4 h-4 shrink-0" />
+          <span>{link.label}</span>
+        </Link>
+      );
+    });
 
   return (
     <nav
@@ -224,33 +183,10 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-1">
             {isAuthenticated ? (
               <>
-                <NavDropdown
-                  label="My Library"
-                  links={myLibraryLinks}
-                  isOpen={isLibraryOpen}
-                  onToggle={toggleLibrary}
-                  onClose={closeDropdowns}
-                  isActive={libraryActive}
-                  menuRef={libraryRef}
-                  pathname={location.pathname}
-                />
-                <NavDropdown
-                  label="Discover"
-                  links={discoverLinks}
-                  isOpen={isDiscoverOpen}
-                  onToggle={toggleDiscover}
-                  onClose={closeDropdowns}
-                  isActive={discoverActive}
-                  menuRef={discoverRef}
-                  pathname={location.pathname}
-                />
+                {renderDesktopDiscoverLinks()}
                 <Link
                   to="/pricing"
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isPricingActive
-                      ? 'bg-amber-50 text-slate-800'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
+                  className={desktopLinkClass(isPricingActive)}
                 >
                   Pricing
                 </Link>
@@ -278,7 +214,12 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={toggleProfile}
-                    className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-stone-100 transition-all duration-200"
+                    aria-expanded={isProfileOpen}
+                    className={`flex items-center gap-2 p-1.5 rounded-lg transition-all duration-200 ${
+                      libraryActive
+                        ? 'bg-amber-50 ring-1 ring-amber-200'
+                        : 'hover:bg-stone-100'
+                    }`}
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 ring-2 ring-white shadow-sm">
                       {user?.profilePic ? (
@@ -297,12 +238,15 @@ const Navbar = () => {
                   </button>
 
                   {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1 animate-scale-in origin-top-right">
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1 animate-scale-in origin-top-right z-50">
                       <div className="px-4 py-3 border-b border-stone-100">
                         <p className="text-sm font-medium text-stone-900">{user?.name || 'Guest'}</p>
                         <p className="text-xs text-stone-500 truncate">{gmail}</p>
                       </div>
                       <div className="py-1">
+                        {renderProfileLibraryLinks(closeProfile)}
+                      </div>
+                      <div className="border-t border-stone-100 py-1">
                         <button
                           type="button"
                           onClick={handleLogout}
@@ -332,20 +276,7 @@ const Navbar = () => {
                 >
                   Why ResourceHub
                 </button>
-                <Link
-                  to="/publicResources"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Community resources</span>
-                </Link>
-                <Link
-                  to="/collections/public"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  <span>Public collections</span>
-                </Link>
+                {renderDesktopDiscoverLinks()}
                 <Link
                   to="/pricing"
                   className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
@@ -383,14 +314,10 @@ const Navbar = () => {
             <div className="px-4 py-4 space-y-1">
               {isAuthenticated ? (
                 <>
-                  {renderMobileLinkGroup('My Library', myLibraryLinks)}
-                  {renderMobileLinkGroup('Discover', discoverLinks)}
-
-                  <div className="pt-2">
-                    <Link to="/pricing" className={pricingLinkClass(isPricingActive)}>
-                      Pricing
-                    </Link>
-                  </div>
+                  {renderMobileDiscoverLinks()}
+                  <Link to="/pricing" className={pricingLinkClass(isPricingActive)}>
+                    Pricing
+                  </Link>
 
                   <Link
                     to="/createResource"
@@ -412,7 +339,7 @@ const Navbar = () => {
                   </Link>
 
                   <div className="pt-3 mt-3 border-t border-stone-100">
-                    <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                    <div className="flex items-center gap-3 px-4 py-2 mb-1">
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-stone-200">
                         {user?.profilePic ? (
                           <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
@@ -425,6 +352,16 @@ const Navbar = () => {
                         <p className="text-xs text-stone-500 truncate">{user?.email}</p>
                       </div>
                     </div>
+                    {myLibraryLinks.map((link) => {
+                      const IconComponent = link.icon;
+                      const isActive = isNavLinkActive(location.pathname, link.href);
+                      return (
+                        <Link key={link.href} to={link.href} className={mobileLinkClass(isActive)}>
+                          <IconComponent className="w-5 h-5 shrink-0" />
+                          <span>{link.label}</span>
+                        </Link>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -457,7 +394,7 @@ const Navbar = () => {
                   >
                     Why ResourceHub
                   </button>
-                  {renderMobileLinkGroup('Discover', discoverLinks)}
+                  {renderMobileDiscoverLinks()}
                   <Link to="/pricing" className={pricingLinkClass(isPricingActive)}>
                     Pricing
                   </Link>
