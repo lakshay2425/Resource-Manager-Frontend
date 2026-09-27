@@ -1,18 +1,74 @@
-import { useContext } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FolderOpen, Plus, Loader2, AlertCircle } from 'lucide-react';
 import CollectionCard from '../components/collections/CollectionCard.jsx';
-import { useMyCollections } from '../hooks/useCollections.js';
+import { useMyCollections, useReorderCollections } from '../hooks/useCollections.js';
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
 import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
+import toast from 'react-hot-toast';
 
 export default function MyCollections() {
   const { data: collections = [], isLoading, isError, error, refetch, isFetching } = useMyCollections();
+  const { mutateAsync: reorderCollections, isPending: isReordering } = useReorderCollections();
+  const dragCollectionIdRef = useRef(null);
   const { username: authUsername } = useContext(AuthContext);
   const [userInfo] = useLocalStorageState('userInfo', null);
   const ownerUsername = formatUsernameForUrl(authUsername || userInfo?.username || userInfo?.name);
+  const orderedCollections = useMemo(
+    () =>
+      [...collections].sort(
+        (a, b) =>
+          (a.order_index ?? 0) - (b.order_index ?? 0) ||
+          (a.created_at ?? '').localeCompare(b.created_at ?? '')
+      ),
+    [collections]
+  );
+
+  const buildReorderPayload = (nextCollections) =>
+    nextCollections.map((collection, index) => ({ id: collection.id, order_index: index }));
+
+  const handleMoveCollection = async (collectionId, direction) => {
+    const index = orderedCollections.findIndex((collection) => collection.id === collectionId);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (index < 0 || targetIndex < 0 || targetIndex >= orderedCollections.length) return;
+
+    const nextCollections = [...orderedCollections];
+    [nextCollections[index], nextCollections[targetIndex]] = [nextCollections[targetIndex], nextCollections[index]];
+    try {
+      await reorderCollections(buildReorderPayload(nextCollections));
+    } catch (err) {
+      toast.error(getCollectionErrorMessage(err, 'Failed to reorder collections.'));
+    }
+  };
+
+  const handleDragStart = (_event, collectionId) => {
+    dragCollectionIdRef.current = collectionId;
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = async (_event, targetCollectionId) => {
+    const draggedCollectionId = dragCollectionIdRef.current;
+    dragCollectionIdRef.current = null;
+    if (!draggedCollectionId || draggedCollectionId === targetCollectionId) return;
+
+    const fromIndex = orderedCollections.findIndex((collection) => collection.id === draggedCollectionId);
+    const toIndex = orderedCollections.findIndex((collection) => collection.id === targetCollectionId);
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const nextCollections = [...orderedCollections];
+    const [movedCollection] = nextCollections.splice(fromIndex, 1);
+    nextCollections.splice(toIndex, 0, movedCollection);
+    try {
+      await reorderCollections(buildReorderPayload(nextCollections));
+    } catch (err) {
+      toast.error(getCollectionErrorMessage(err, 'Failed to reorder collections.'));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -51,6 +107,11 @@ export default function MyCollections() {
               <p className="text-stone-600 mt-1 text-sm sm:text-base">Organize resources into ordered lists with custom statuses.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              {isReordering && (
+                <span className="text-xs text-stone-500 inline-flex items-center justify-center gap-1 sm:justify-start">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving order
+                </span>
+              )}
               {isFetching && !isLoading && (
                 <span className="text-xs text-stone-500 inline-flex items-center justify-center gap-1 sm:justify-start">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" /> Refreshing
@@ -82,8 +143,21 @@ export default function MyCollections() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
-            {collections.map((collection) => (
-              <CollectionCard key={collection.id} collection={collection} ownerUsername={ownerUsername} />
+            {orderedCollections.map((collection, index) => (
+              <CollectionCard
+                key={collection.id}
+                collection={collection}
+                ownerUsername={ownerUsername}
+                canReorder
+                isFirst={index === 0}
+                isLast={index === orderedCollections.length - 1}
+                isReordering={isReordering}
+                onMoveUp={(id) => handleMoveCollection(id, 'up')}
+                onMoveDown={(id) => handleMoveCollection(id, 'down')}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              />
             ))}
           </div>
         )}

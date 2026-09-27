@@ -35,6 +35,11 @@ export const deleteCollection = async (id) => {
   await axiosInstance.delete(`/collections/${id}`);
 };
 
+export const reorderCollections = async (collections) => {
+  const { data } = await axiosInstance.patch('/collections/reorder', { collections });
+  return data.updated;
+};
+
 export const addCollectionItem = async (collectionId, payload) => {
   const res = await axiosInstance.post(`/collections/${collectionId}/items`, payload);
   return {

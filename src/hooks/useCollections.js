@@ -6,6 +6,7 @@ import {
   createCollection,
   updateCollection,
   deleteCollection,
+  reorderCollections,
   addCollectionItem,
   createAndAddCollectionItem,
   updateCollectionItemStatus,
@@ -93,6 +94,45 @@ export const useDeleteCollection = () => {
       if (detailQueryKey) {
         queryClient.removeQueries({ queryKey: detailQueryKey });
       }
+    },
+  });
+};
+
+export const useReorderCollections = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (collections) => reorderCollections(collections),
+    onMutate: async (collections) => {
+      await queryClient.cancelQueries({ queryKey: collectionKeys.mine() });
+      const previous = queryClient.getQueryData(collectionKeys.mine());
+      const orderMap = new Map(collections.map(({ id, order_index }) => [id, order_index]));
+
+      if (previous) {
+        const nextCollections = [...previous]
+          .map((collection) =>
+            orderMap.has(collection.id)
+              ? { ...collection, order_index: orderMap.get(collection.id) }
+              : collection
+          )
+          .sort(
+            (a, b) =>
+              (a.order_index ?? 0) - (b.order_index ?? 0) ||
+              (a.created_at ?? '').localeCompare(b.created_at ?? '')
+          );
+
+        queryClient.setQueryData(collectionKeys.mine(), nextCollections);
+      }
+
+      return { previous };
+    },
+    onError: (_error, _collections, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(collectionKeys.mine(), context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: collectionKeys.mine() });
     },
   });
 };
