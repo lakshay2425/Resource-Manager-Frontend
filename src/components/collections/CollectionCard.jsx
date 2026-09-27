@@ -68,12 +68,6 @@ export default function CollectionCard({
             <Layers className="w-3.5 h-3.5" />
             {collection.item_count ?? 0} items
           </span>
-          {collection.item_statuses?.length > 0 && (
-            <span className="break-words line-clamp-2 sm:line-clamp-1 sm:truncate">
-              · {collection.item_statuses.slice(0, 3).join(', ')}
-              {collection.item_statuses.length > 3 ? '…' : ''}
-            </span>
-          )}
         </div>
 
         {showOwner && collection.owner?.name && (
