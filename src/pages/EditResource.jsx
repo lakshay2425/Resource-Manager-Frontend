@@ -132,11 +132,13 @@ export default function EditResourcePage() {
     if (updatedFields.name !== undefined) {
       updatedFields.name = updatedFields.name.trim();
     }
-    if (updatedFields.description.length > 500) {
-      toast.error("Description must be less than 500 characters");
-      return;
+    if (updatedFields.description !== undefined) {
+      if(updatedFields.description.length > 500){
+        toast.error("Description must be less than 500 characters");
+        return;
+      }
+      updatedFields.description = updatedFields.description.trim();
     }
-    updatedFields.description = updatedFields.description.trim();
     if (updatedFields.sourceLink !== undefined) {
       updatedFields.sourceLink = updatedFields.sourceLink.trim();
     }
