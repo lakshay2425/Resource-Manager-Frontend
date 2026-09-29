@@ -283,12 +283,12 @@ export default function EditResourcePage() {
                     <button
                       type="button"
                       onClick={handleStatusToggle}
-                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2 ${currentStatus === 'public'
+                      className={`relative inline-flex h-8 w-16 shrink-0 items-center overflow-hidden rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2 ${currentStatus === 'public'
                         ? 'bg-slate-600'
                         : 'bg-stone-300'
                         }`}
                     >
-                      <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-sm transition-all duration-300 ${currentStatus === 'public' ? 'translate-x-7' : 'translate-x-1'
+                      <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-sm transition-all duration-300 ${currentStatus === 'public' ? 'translate-x-9' : 'translate-x-1'
                         }`}>
                         <div className="flex items-center justify-center h-full">
                           {currentStatus === 'public' ? (
@@ -476,24 +476,24 @@ export default function EditResourcePage() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
                 onClick={() => {
                   openDeleteModal();
                   setResourceToDelete(initialResource);
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
+                className="flex w-full items-center justify-center gap-2 px-4 py-2.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200 hover:border-red-300 text-sm font-medium sm:w-auto"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
               </button>
 
-              <div className="flex items-center gap-3">
+              <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto">
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="btn-secondary"
+                  className="btn-secondary w-full sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -501,7 +501,7 @@ export default function EditResourcePage() {
                 <button
                   type="submit"
                   disabled={!isDirty || isSubmitting}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none sm:w-auto"
                 >
                   {saveStatus === 'saving' ? (
                     <>
