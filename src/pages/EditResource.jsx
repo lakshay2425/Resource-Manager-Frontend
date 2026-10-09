@@ -26,6 +26,7 @@ import {
   isDuplicateResourceError,
   getDuplicateResourceMessage,
 } from '../utilis/resourceErrors.js';
+import { isUsernameSetupRequiredError } from '../utilis/usernameSetup.js';
 
 export default function EditResourcePage() {
   const { id } = useParams();
@@ -163,6 +164,10 @@ export default function EditResourcePage() {
       }
     } catch (error) {
       console.error('Error saving resource:', error);
+      if (isUsernameSetupRequiredError(error)) {
+        toast.dismiss(saveToastId);
+        return;
+      }
       if (isDuplicateResourceError(error)) {
         toast.dismiss(saveToastId);
         setSubmitError(getDuplicateResourceMessage(error));

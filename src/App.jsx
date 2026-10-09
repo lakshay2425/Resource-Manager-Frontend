@@ -135,6 +135,7 @@ function App() {
                 }
               />
 
+              <Route path="/collections/id/:id" element={<CollectionDetail />} />
               <Route path="/collections/:username/:slug" element={<CollectionDetail />} />
               <Route
                 path="/collections"
@@ -161,4 +162,3 @@ function App() {
 
 
 export default App
-

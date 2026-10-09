@@ -2,9 +2,12 @@ import { createContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 import { syncPlanCookie } from '../api/usersApi.js';
 import { registerTokenAuthFailureHandler } from '../utilis/authSession.js';
+import {
+  registerUsernameSetupRequiredHandler,
+} from '../utilis/usernameSetup.js';
+import UsernameSetupModal from '../components/UsernameSetupModal.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
@@ -25,6 +28,8 @@ export const AuthProvider = ({ children }) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isUsernameSetupOpen, setIsUsernameSetupOpen] = useState(false);
+  const [suggestedUsername, setSuggestedUsername] = useState('');
 
   const clearSession = useCallback(() => {
     localStorage.removeItem('userInfo');
@@ -32,7 +37,32 @@ export const AuthProvider = ({ children }) => {
     setGmail('');
     setName('');
     setUsername('');
+    setIsUsernameSetupOpen(false);
   }, []);
+
+  const openUsernameSetup = useCallback((suggestion = '') => {
+    sessionStorage.removeItem('rh_username_setup_dismissed');
+    setSuggestedUsername(suggestion ?? '');
+    setIsUsernameSetupOpen(true);
+  }, []);
+
+  const dismissUsernameSetup = useCallback(() => {
+    sessionStorage.setItem('rh_username_setup_dismissed', 'true');
+    setIsUsernameSetupOpen(false);
+  }, []);
+
+  const handleUsernameConfigured = useCallback((configuredUsername) => {
+    setUsername(configuredUsername);
+    setIsUsernameSetupOpen(false);
+    sessionStorage.removeItem('rh_username_setup_dismissed');
+    const stored = readStoredUserInfo() ?? {};
+    localStorage.setItem('userInfo', JSON.stringify({
+      ...stored,
+      name: stored.name ?? name,
+      username: configuredUsername,
+    }));
+    toast.success('Username configured. You can now make resources and collections public.');
+  }, [name]);
 
   const handleTokenAuthFailure = useCallback(async () => {
     try {
@@ -52,6 +82,11 @@ export const AuthProvider = ({ children }) => {
     registerTokenAuthFailureHandler(handleTokenAuthFailure);
   }, [handleTokenAuthFailure]);
 
+  useEffect(() => {
+    registerUsernameSetupRequiredHandler(openUsernameSetup);
+    return () => registerUsernameSetupRequiredHandler(null);
+  }, [openUsernameSetup]);
+
   const checkAuthStatus = async () => {
     try {
       const apiResponse = await axios.get(`${import.meta.env.VITE_AUTH_URL}/auth/google/verify`, {
@@ -61,17 +96,27 @@ export const AuthProvider = ({ children }) => {
         const stored = readStoredUserInfo();
         const authInfo = apiResponse.data.userInfo;
         const resolvedName = stored?.name ?? authInfo.name ?? '';
-        const resolvedUsername = formatUsernameForUrl(
-          stored?.username ?? authInfo.username ?? authInfo.name ?? ''
-        );
 
         setIsAuthenticated(true);
         setGmail(authInfo.userEmail);
         setName(resolvedName);
-        setUsername(resolvedUsername);
 
         try {
-          await syncPlanCookie({ name: resolvedName, username: resolvedUsername });
+          const account = await syncPlanCookie({ name: resolvedName });
+          const resolvedUsername = account?.username ?? '';
+          setUsername(resolvedUsername);
+          localStorage.setItem('userInfo', JSON.stringify({
+            ...(stored ?? {}),
+            name: resolvedName,
+            username: resolvedUsername,
+          }));
+          if (
+            !account?.usernameConfigured &&
+            sessionStorage.getItem('rh_username_setup_dismissed') !== 'true'
+          ) {
+            setSuggestedUsername(account?.suggestedUsername ?? '');
+            setIsUsernameSetupOpen(true);
+          }
         } catch (syncError) {
           console.error('Plan cookie sync failed on session restore:', syncError);
         }
@@ -102,11 +147,18 @@ export const AuthProvider = ({ children }) => {
     setUsername,
     setIsAuthenticated,
     clearSession,
+    openUsernameSetup,
   };
 
   return (
     <AuthContext.Provider value={authContextValue}>
       {children}
+      <UsernameSetupModal
+        isOpen={isUsernameSetupOpen}
+        suggestedUsername={suggestedUsername}
+        onConfigured={handleUsernameConfigured}
+        onDismiss={dismissUsernameSetup}
+      />
     </AuthContext.Provider>
   );
 };

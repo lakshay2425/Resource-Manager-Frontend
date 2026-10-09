@@ -43,6 +43,7 @@
 - **Public Collections**: Explore and share curated, ordered resource lists
 - **Collection Workflows**: Optional per-item status labels (e.g. todo, done) on collections
 - **User Profiles**: Track resource ownership and contributions via collection URLs (`/collections/:username/:slug`)
+- **Username Setup**: Choose a unique username now or when first publishing a resource or collection
 
 ### 📱 **Progressive Web App**
 
@@ -344,6 +345,7 @@ Shared helpers live in `src/utilis/resourceErrors.js`. Other error statuses keep
 | `/publicResources` | Public | Community resources |
 | `/collections/public` | Public | Browse public collections |
 | `/collections/:username/:slug` | Public* | Collection detail (*private collections get `noindex`) |
+| `/collections/id/:id` | Owner/public | Open a collection by ID, including private collections before username setup |
 | `/resources` | Required | My resources |
 | `/createResource` | Required | Create resource (name + link) |
 | `/edit/:id` | Required | Edit resource |

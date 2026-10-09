@@ -17,9 +17,11 @@ export default function CollectionCard({
   onDrop,
 }) {
   const isPublic = collection.visibility === 'public';
-  const username = formatUsernameForUrl(ownerUsername ?? collection.owner?.username ?? collection.owner?.name);
+  const username = formatUsernameForUrl(ownerUsername || collection.owner?.username);
   const slug = collection.slug;
-  const href = username && slug ? getCollectionPath(username, slug) : '/collections';
+  const href = isPublic && username && slug
+    ? getCollectionPath(username, slug)
+    : `/collections/id/${collection.id}`;
 
   return (
     <article

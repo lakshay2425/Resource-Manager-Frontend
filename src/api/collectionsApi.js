@@ -17,6 +17,11 @@ export const getCollectionBySlug = async (username, slug) => {  const { data } =
   return data.collection;
 };
 
+export const getCollectionById = async (id) => {
+  const { data } = await axiosInstance.get(`/collections/${id}`);
+  return data.collection;
+};
+
 export const createCollection = async (payload) => {
   const res = await axiosInstance.post('/collections', payload);
   return {

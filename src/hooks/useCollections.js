@@ -3,6 +3,7 @@ import {
   listMyCollections,
   listPublicCollections,
   getCollectionBySlug,
+  getCollectionById,
   createCollection,
   updateCollection,
   deleteCollection,
@@ -20,6 +21,7 @@ export const collectionKeys = {
   mine: () => [...collectionKeys.all, 'mine'],
   public: () => [...collectionKeys.all, 'public'],
   detail: (username, slug) => [...collectionKeys.all, 'detail', username, slug],
+  detailById: (id) => [...collectionKeys.all, 'detail-by-id', id],
 };
 
 export const useMyCollections = (options = {}) => {
@@ -42,6 +44,15 @@ export const useCollectionBySlug = (username, slug, options = {}) => {
     queryKey: collectionKeys.detail(username, slug),
     queryFn: () => getCollectionBySlug(username, slug),
     enabled: Boolean(username && slug),
+    ...options,
+  });
+};
+
+export const useCollectionById = (id, options = {}) => {
+  return useQuery({
+    queryKey: collectionKeys.detailById(id),
+    queryFn: () => getCollectionById(id),
+    enabled: Boolean(id),
     ...options,
   });
 };

@@ -15,7 +15,7 @@ export default function MyCollections() {
   const dragCollectionIdRef = useRef(null);
   const { username: authUsername } = useContext(AuthContext);
   const [userInfo] = useLocalStorageState('userInfo', null);
-  const ownerUsername = formatUsernameForUrl(authUsername || userInfo?.username || userInfo?.name);
+  const ownerUsername = formatUsernameForUrl(authUsername || userInfo?.username);
   const orderedCollections = useMemo(
     () =>
       [...collections].sort(

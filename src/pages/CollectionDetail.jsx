@@ -21,6 +21,7 @@ import ShareCollectionButton from '../components/collections/ShareCollectionButt
 import {
   collectionKeys,
   useCollectionBySlug,
+  useCollectionById,
   useMyCollections,
   useUpdateCollection,
   useDeleteCollection,
@@ -33,10 +34,11 @@ import {
 import { getCollectionErrorMessage, isAuthError } from '../utilis/collectionErrors.js';
 import { getCollectionPath, getCollectionShareUrl, getResourceId, formatUsernameForUrl } from '../utilis/collectionUrls.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
+import { isUsernameSetupRequiredError } from '../utilis/usernameSetup.js';
 import { buildPageTitle, getCollectionJsonLd, SITE_NAME } from '../utilis/seo.js';
 
 export default function CollectionDetail() {
-  const { username, slug } = useParams();
+  const { username, slug, id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
 
@@ -48,9 +50,12 @@ export default function CollectionDetail() {
   const [removingItemId, setRemovingItemId] = useState(null);
   const dragItemIdRef = useRef(null);
 
-  const detailQueryKey = collectionKeys.detail(formatUsernameForUrl(username), slug);
-
-  const { data: collection, isLoading, isError, error, refetch } = useCollectionBySlug(username, slug);
+  const detailQueryKey = id
+    ? collectionKeys.detailById(id)
+    : collectionKeys.detail(formatUsernameForUrl(username), slug);
+  const bySlugQuery = useCollectionBySlug(username, slug, { enabled: Boolean(username && slug && !id) });
+  const byIdQuery = useCollectionById(id);
+  const { data: collection, isLoading, isError, error, refetch } = id ? byIdQuery : bySlugQuery;
 
   const { data: myCollections = [] } = useMyCollections({
     enabled: isAuthenticated,
@@ -63,8 +68,9 @@ export default function CollectionDetail() {
     return myCollections.some((c) => c.id === collection.id);
   }, [isAuthenticated, myCollections, collection]);
 
-  const collectionSeoPath = username && slug
-    ? getCollectionPath(formatUsernameForUrl(username), slug)
+  const seoUsername = formatUsernameForUrl(collection?.owner?.username ?? username);
+  const collectionSeoPath = seoUsername && collection?.slug
+    ? getCollectionPath(seoUsername, collection.slug)
     : '/collections/public';
 
   const collectionSeo = useMemo(() => {
@@ -216,6 +222,7 @@ export default function CollectionDetail() {
         navigate(getCollectionPath(ownerUsername, nextSlug), { replace: true });
       }
     } catch (err) {
+      if (isUsernameSetupRequiredError(err)) return;
       toast.error(getCollectionErrorMessage(err, 'Failed to update collection.'));
     }
   };

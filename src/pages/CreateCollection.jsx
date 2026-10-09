@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, X, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -9,13 +9,16 @@ import { getCollectionErrorMessage } from '../utilis/collectionErrors.js';
 import { isPlanLimitError, getPlanLimitMessage } from '../utilis/planErrors.js';
 import PlanLimitBanner from '../components/PlanLimitBanner.jsx';
 import { useLocalStorageState } from '../hooks/useLocalStorage.js';
-import { getCollectionPath, formatUsernameForUrl } from '../utilis/collectionUrls.js';
+import { getCollectionPath } from '../utilis/collectionUrls.js';
+import { AuthContext } from '../context/AuthContext.jsx';
+import { isUsernameSetupRequiredError } from '../utilis/usernameSetup.js';
 
 const MAX_STATUSES = 5;
 
 export default function CreateCollection() {
   const navigate = useNavigate();
   const [userInfo] = useLocalStorageState('userInfo', null);
+  const { username } = useContext(AuthContext);
   const idempotencyKeyRef = useRef(newCollectionIdempotencyKey());
 
   const [name, setName] = useState('');
@@ -64,16 +67,10 @@ export default function CreateCollection() {
     }
 
     const displayName = userInfo?.name || userInfo?.username || 'ResourceHub User';
-    const username = formatUsernameForUrl(userInfo?.username || userInfo?.name);
-
-    if (!username) {
-      toast.error('Username is missing. Please log out and sign in again.');
-      return;
-    }
 
     try {
       setPlanLimitError('');
-      await ensureUser({ name: displayName, username });
+      await ensureUser({ name: displayName });
 
       const result = await createCollection({
         name: trimmedName,
@@ -90,7 +87,7 @@ export default function CreateCollection() {
       }
 
       const { slug } = result.collection;
-      if (slug) {
+      if (result.collection.visibility === 'public' && slug && username) {
         navigate(getCollectionPath(username, slug));
       } else {
         navigate('/collections');
@@ -102,6 +99,7 @@ export default function CreateCollection() {
         toast.error(message);
         return;
       }
+      if (isUsernameSetupRequiredError(error)) return;
       toast.error(getCollectionErrorMessage(error, 'Failed to create collection.'));
     }
   };

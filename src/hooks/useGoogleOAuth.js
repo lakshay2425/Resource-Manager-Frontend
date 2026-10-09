@@ -6,10 +6,15 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useLocalStorageState } from './useLocalStorage.js';
 import { ensureLocalUser } from '../api/usersApi.js';
-import { formatUsernameForUrl } from '../utilis/collectionUrls.js';
 
 export const useGoogleAuth = () => {
-  const { setIsAuthenticated, setGmail, setName, setUsername } = useContext(AuthContext);
+  const {
+    setIsAuthenticated,
+    setGmail,
+    setName,
+    setUsername,
+    openUsernameSetup,
+  } = useContext(AuthContext);
   const authService = import.meta.env.VITE_AUTH_URL;
   const navigate = useNavigate();
   // eslint-disable-next-line no-unused-vars
@@ -28,27 +33,33 @@ export const useGoogleAuth = () => {
         );
       }
       if (result.status == 200 || result.status == 201) {
-        const { name, username, email, profileImage } = result.data.userInfo;
-        const normalizedUsername = formatUsernameForUrl(username || name);
+        const { name, email, profileImage } = result.data.userInfo;
 
         setUser({
           profilePic: profileImage,
-          username: normalizedUsername,
+          username: '',
           name,
         });
         setGmail(email);
         setName(name ?? '');
-        setUsername(normalizedUsername);
+        setUsername('');
         setIsAuthenticated(true);
 
         try {
-          await ensureLocalUser({ name, username: normalizedUsername });
+          const account = await ensureLocalUser({ name });
+          const localUsername = account.username ?? '';
+          setUsername(localUsername);
+          setUser({
+            profilePic: profileImage,
+            username: localUsername,
+            name,
+          });
+          if (!account.usernameConfigured) {
+            openUsernameSetup(account.suggestedUsername);
+          }
         } catch (signupError) {
           const status = signupError?.response?.status;
-          const message = signupError?.response?.data?.message ?? '';
-          if (status === 409 && message.toLowerCase().includes('username')) {
-            toast.error('Username already taken. Please contact support.');
-          } else if (status !== 409) {
+          if (status !== 409) {
             console.error('Local user signup failed:', signupError);
             toast.error('Could not finish account setup. Some features may not work.');
           }

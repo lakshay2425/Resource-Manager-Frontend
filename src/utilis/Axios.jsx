@@ -8,6 +8,7 @@ import {
   getPlanLimitType,
 } from './planErrors.js';
 import { notifyTokenAuthFailure } from './authSession.js';
+import { notifyUsernameSetupRequired } from './usernameSetup.js';
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -34,6 +35,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const status = error.response?.status;
+
+    if (error.response?.data?.code === 'USERNAME_SETUP_REQUIRED') {
+      notifyUsernameSetupRequired(error.response.data.suggestedUsername);
+      return Promise.reject(error);
+    }
 
     if (isPlanLimitError(error)) {
       error.planLimitType = getPlanLimitType(error);
