@@ -102,21 +102,21 @@ export default function CollectionItemRow({
       </div>
 
       <div className={`flex flex-col gap-2.5 shrink-0 ${itemStatus  ? 'pt-4 mt-1 border-t border-stone-100' : 'pt-3 mt-1 border-t border-stone-100'}`}>
-        {itemStatus && (
-          isOwner && (
-            <select
-              value={item.status}
-              onChange={(e) => onStatusChange(item.id, e.target.value)}
-              disabled={isUpdating}
-              className="input text-sm py-2.5 w-full"
-            >
-              {itemStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          )
+        {isOwner && itemStatuses.length > 0 && (
+          <select
+            value={item.status ?? ''}
+            onChange={(e) => onStatusChange(item.id, e.target.value)}
+            disabled={isUpdating}
+            className="input text-sm py-2.5 w-full"
+            aria-label={`Status for ${resource?.name ?? 'collection item'}`}
+          >
+            {!item.status && <option value="">Select a status</option>}
+            {itemStatuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
         )}
 
         <div className="flex items-center gap-2">

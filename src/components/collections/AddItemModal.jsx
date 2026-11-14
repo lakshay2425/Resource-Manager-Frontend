@@ -16,6 +16,7 @@ export default function AddItemModal({
   resources,
   existingResourceIds = new Set(),
   itemStatuses = [],
+  isStatusRequired = false,
   onClose,
   onAdd,
   isAdding,
@@ -25,8 +26,7 @@ export default function AddItemModal({
   const [view, setView] = useState('search');
   const [search, setSearch] = useState('');
   const [selectedResourceId, setSelectedResourceId] = useState('');
-  const hasStatuses = itemStatuses.length > 0;
-  const [status, setStatus] = useState(itemStatuses[0] ?? '');
+  const [status, setStatus] = useState(isStatusRequired ? itemStatuses[0] ?? '' : '');
   const [idempotencyKey] = useState(() => newItemIdempotencyKey());
 
   const [createName, setCreateName] = useState('');
@@ -66,14 +66,14 @@ export default function AddItemModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedResourceId) return;
-    if (hasStatuses && !status) return;
+    if (isStatusRequired && !status) return;
 
     const payload = {
       resource_id: selectedResourceId,
       idempotency_key: idempotencyKey,
     };
 
-    if (hasStatuses) {
+    if (status) {
       payload.status = status;
     }
 
@@ -220,10 +220,16 @@ export default function AddItemModal({
               )}
             </div>
 
-            {hasStatuses && (
+            {itemStatuses.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">Status</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-full" required>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="input w-full"
+                  required={isStatusRequired}
+                >
+                  {!isStatusRequired && <option value="">No status</option>}
                   {itemStatuses.map((itemStatus) => (
                     <option key={itemStatus} value={itemStatus}>
                       {itemStatus}

@@ -133,7 +133,17 @@ export default function CollectionDetail() {
     );
   }, [sortedItems]);
 
-  const itemStatuses = collection?.item_statuses ?? [];
+  const itemStatuses = useMemo(() => {
+    const configuredStatuses = Array.isArray(collection?.item_statuses)
+      ? collection.item_statuses
+      : [];
+    const existingStatuses = (collection?.items ?? [])
+      .map((item) => item.status)
+      .filter((status) => typeof status === 'string' && status.trim());
+
+    return [...new Set([...configuredStatuses, ...existingStatuses])];
+  }, [collection?.item_statuses, collection?.items]);
+  const isStatusRequired = Array.isArray(collection?.item_statuses) && collection.item_statuses.length > 0;
 
   const handleStatusChange = async (itemId, status) => {
     setUpdatingItemId(itemId);
@@ -473,6 +483,7 @@ export default function CollectionDetail() {
           resources={resources}
           existingResourceIds={existingResourceIds}
           itemStatuses={itemStatuses}
+          isStatusRequired={isStatusRequired}
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddItem}
           isAdding={isAddingItem}
